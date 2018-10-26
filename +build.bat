@@ -1,1 +1,1 @@
-"mingw32-make.exe" -f Win32.mk
+"mingw32-make.exe" -f Win32.mk all

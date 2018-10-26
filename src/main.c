@@ -16,6 +16,8 @@
 #include <TChar.h>
 #include <Time.h>
 
+#define DEF_FUNC_WSA /* Use WSA functionst */
+
 #include "log.h"
 #include "help_wsa.c"
 
@@ -115,9 +117,11 @@ LRESULT CALLBACK WndProcWmWSAAsyncGethostByName( HWND hWnd, NETWNDDATA *nwd, HAN
         }
         /// Creation soket
         SOCKET s = INVALID_SOCKET;
-        // if ( ( s = WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0 ) ) == INVALID_SOCKET ) {
+        #ifdef DEF_FUNC_WSA
+        if ( ( s = WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0 ) ) == INVALID_SOCKET ) {
+        #else
         if ( ( s = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ) == INVALID_SOCKET ) {
-
+        #endif
             err = WSAGetLastError();
             LOG_ERR_WSA( "WSASocket()", err );
             DestroyWindow( hWnd );
@@ -149,7 +153,11 @@ LRESULT CALLBACK WndProcWmWSAAsyncGethostByName( HWND hWnd, NETWNDDATA *nwd, HAN
             .sin_port = htons( nwd->port ),
             .sin_addr.s_addr = *((UINT32*)(h->h_addr_list[0]))
         };
+        #ifdef DEF_FUNC_WSA
         if( WSAConnect( s, (LPSOCKADDR)(&sa), sizeof(sa), NULL, NULL, NULL, NULL ) == SOCKET_ERROR ) {
+        #else
+        if( connect( s, (LPSOCKADDR)(&sa), sizeof(sa) ) == SOCKET_ERROR ) {
+        #endif
             err = WSAGetLastError();
             if ( err != WSAEWOULDBLOCK ) {
                 LOG_ERR_WSA( "WSAConnect()", err );
@@ -201,7 +209,11 @@ LRESULT CALLBACK WndProcWmWSAAsyncSelect( HWND hWnd, NETWNDDATA *nwd, SOCKET s, 
     }
     switch( type ) {
         case FD_CONNECT: {
+            #ifdef DEF_FUNC_WSA
             if ( WSASend( s, &nwd->req, 1, &nwd->btSent, 0, NULL, NULL ) == SOCKET_ERROR ) {
+            #else
+            if ( ( nwd->btSent = send( s, nwd->req.buf, nwd->req.len, 0 ) ) == SOCKET_ERROR ) {
+            #endif
                 err = WSAGetLastError();
                 if(err != WSAEWOULDBLOCK) {
                     LOG_ERR_WSA( "WSASend()", err );
@@ -218,7 +230,11 @@ LRESULT CALLBACK WndProcWmWSAAsyncSelect( HWND hWnd, NETWNDDATA *nwd, SOCKET s, 
         }
         case FD_READ: {
             nwd->flRecv = 0;
+            #ifdef DEF_FUNC_WSA
             if ( WSARecv( s, &nwd->res, 1, &nwd->btRecv, &nwd->flRecv, NULL, NULL ) == SOCKET_ERROR ) {
+            #else
+            if ( ( nwd->flRecv = recv( s, nwd->res.buf, nwd->res.len, nwd->flRecv ) ) == SOCKET_ERROR ) {
+            #endif
                 err = WSAGetLastError();
                 if(err != WSAEWOULDBLOCK) {
                     LOG_ERR_WSA( "WSARecv()", err );

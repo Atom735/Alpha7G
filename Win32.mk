@@ -23,6 +23,7 @@ all : main.exe
 clean:
 	DEL *.dll
 	DEL *.exe
+	DEL *.log
 
 
 main.exe :
