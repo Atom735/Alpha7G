@@ -1,4 +1,14 @@
-#define LOG_ERR_WSA(_fn, _err) LOG_ERRS(_fn, _err, encode_WSAGetLastError( _err ) );
+#define LOG_ERR_WSA(_fn, _err) LOG_ERRS( _fn, _err, encode_WSAGetLastError( _err ) )
+#define LOG_ERR_WSA_ASYNC(_fn, _err) LOG_ERR_WSA( _fn " ASYNC AND MAYBE NOT", _err )
+
+#define LOG_WSA_SOCKET(...) (fprintf( nwd->pLog, __VA_ARGS__ ), fflush( nwd->pLog ))
+#define LOG_WSA_SOCKET_ERR(_fname, _err) LOG_WSA_SOCKET_ERRS(_fname, _err, "UNKNOWN")
+#define LOG_WSA_SOCKET_ERRS(_fname, _err, _errs) LOG_WSA_SOCKET( "%s:%d => %s failed with error 0x%x (%d)[%s]\n", __FILE__, __LINE__, _fname, (unsigned)_err, (int)_err, _errs )
+#define LOG_WSA_SOCKET_ERR_WSA(_fn, _err) LOG_WSA_SOCKET_ERRS( _fn, _err, encode_WSAGetLastError( _err ) )
+#define LOG_WSA_SOCKET_ERR_WSA_ASYNC(_fn, _err) LOG_WSA_SOCKET_ERR_WSA( _fn " ASYNC AND MAYBE NOT", _err )
+
+
+
 
 #define WSAGETASYNCBUFLEN(lParam) LOWORD(lParam)
 #define WSAGETASYNCERROR(lParam)  HIWORD(lParam)
