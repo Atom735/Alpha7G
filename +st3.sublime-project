@@ -1,0 +1,47 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		},
+        {
+            "path": "F:\\sdk\\SDL2-2.0.8\\i686-w64-mingw32\\include",
+            "name": "inc SDL"
+        },
+        {
+            "path": "F:\\sdk\\libressl-2.5.5-windows\\include",
+            "name": "inc SSL"
+        },
+        {
+            "path": "C:\\Program Files\\mingw-w64\\i686-8.1.0-posix-sjlj-rt_v6-rev0\\mingw32\\i686-w64-mingw32\\include",
+            "name": "inc MinGW"
+        },
+        {
+            "path": "F:\\sdk\\libressl-2.8.2",
+            "name": "LibreSSL 2.8.2"
+        }
+
+
+	],
+    "build_systems":
+    [
+        {
+            "name": "mingw-make",
+            "cmd": ["$project_path\\+build.bat"],
+        }
+    ]
+
+    /*
+    access_token=4031e8e12d1f27eb39c9aee3155cb56e28271937f59a52cc5987e848746eb8355ea0ac6c3e9c6897f7c0e
+    expires_in=0
+    user_id=27185694
+    state=WelcomeAtom735https://oauth.vk.com/blank.html
+
+    https://api.vk.com/method/METHOD_NAME?PARAMETERS&access_token=ACCESS_TOKEN&v=V
+
+    messages.getConversations
+
+
+    https://api.vk.com/method/messages.getConversations?access_token=4031e8e12d1f27eb39c9aee3155cb56e28271937f59a52cc5987e848746eb8355ea0ac6c3e9c6897f7c0e&v=5.87&count=200
+    */
+}
