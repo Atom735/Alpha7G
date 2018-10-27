@@ -17,7 +17,7 @@ int APIENTRY wWinMain ( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpC
     if ( A7LogOpen ( NULL ) != 0 ) return (-1);
     if ( A7NetInit ( hInstance ) != 0 ) goto end;
 
-    A7NetConnect ( "vk.com", 80, 0 );
+    A7NetConnect ( "vk.com", 443, 1 );
 
     // a7CreateAsyncHttpConnection( "example.com", NULL );
     // a7CreateAsyncHttpConnection( "vk.com", NULL );

@@ -11,5 +11,6 @@
 
 
 extern const char * A7Err_WSAGetLastError ( int err );
+extern const char * A7Err_SSL_get_error ( int err );
 
 #endif
