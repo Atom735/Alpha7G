@@ -8,5 +8,12 @@ extern FILE *g_logfile;
 #define     LOG_FLUSH() fflush( g_logfile )
 #define     ASSERT_ALLOC(_p) if( _p == NULL ) {LOG_ERR("bad_alloc", 0);}
 
-
+#define     LOG_SSL_ERRORS() {\
+        int err;\
+        while ( ( err = ERR_get_error() ) != 0 ) {\
+            char *str = ERR_error_string(err, 0);\
+            if (!str) break;\
+            LOG_ERR( str , 0 );\
+        }\
+    }
 

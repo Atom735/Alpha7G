@@ -5,26 +5,22 @@ SDK_PATH_SSL = F:\\sdk\\libressl-2.5.5-windows\\
 
 SDK_PATH_SSL2 = F:\\sdk\\libressl-2.8.2\\
 
-PATH_INCLUDE = $(SDK_PATH_SDL)include $(SDK_PATH_SSL2)include $(SDK_PATH_SSL2)include/compat $(SDK_PATH_SSL)include
+PATH_INCLUDE = $(SDK_PATH_SDL)include $(SDK_PATH_SSL)include
 
 PATH_LIBS = $(SDK_PATH_SDL)lib $(SDK_PATH_SSL)x86
 
-PRE_DEFINES_SSL2 = __BEGIN_HIDDEN_DECLS= __END_HIDDEN_DECLS= LIBRESSL_INTERNAL
-PRE_DEFINES = WIN32_LEAN_AND_MEAN _WIN32_WINNT=_WIN32_WINNT_WIN7  $(PRE_DEFINES_SSL2)
-PRE_LIBS = $(addprefix $(SDK_PATH_SSL)x86\\, libcrypto-41.lib )
+PRE_DEFINES = WIN32_LEAN_AND_MEAN _WIN32_WINNT=_WIN32_WINNT_WIN7
+PRE_LIBS = $(addprefix $(SDK_PATH_SSL)x86\\, libcrypto-41.lib libssl-43.lib )
 
 CC = gcc.exe
 
 CPPFLAGS = $(addprefix -D, $(PRE_DEFINES)) $(addprefix -I, $(PATH_INCLUDE))
 CFLAGS = -mwindows -municode -march=pentium4 -Wall -O3
-LDFLAGS = $(addprefix -L, $(PATH_LIBS)) -lmingw32 -lws2_32 $(PRE_LIBS) -lSDL2main -lSDL2
+LDFLAGS = $(addprefix -L, $(PATH_LIBS)) -lmingw32 -lws2_32 $(PRE_LIBS)
 
-SOURCES_SSL2 = bio_ssl.c bs_ber.c bs_cbb.c bs_cbs.c d1_both.c d1_clnt.c d1_enc.c d1_lib.c d1_meth.c d1_pkt.c d1_srtp.c d1_srvr.c pqueue.c s3_cbc.c s3_lib.c ssl_algs.c ssl_asn1.c ssl_both.c ssl_cert.c ssl_ciph.c ssl_clnt.c ssl_err.c ssl_init.c ssl_lib.c ssl_packet.c ssl_pkt.c ssl_rsa.c ssl_sess.c ssl_srvr.c ssl_stat.c ssl_tlsext.c ssl_txt.c ssl_versions.c t1_clnt.c t1_enc.c t1_hash.c t1_lib.c t1_meth.c t1_srvr.c
-
-
-SOURCES_CRYPTO = evp/digest.c crypto_init.c conf/conf_sap.c compat/freezero.c
-
-SOURCES = $(addprefix src/, main.c)
+FILES = a7main.c a7log.c a7err.c a7net.c a7ut.c
+SOURCES = $(addprefix src/, $(FILES))
+OBJECTS = $(addsuffix .o, $(addprefix obj/, $(FILES)))
 
 all : main.exe
 	main.exe
@@ -33,16 +29,13 @@ clean:
 	DEL /S *.dll
 	DEL /S *.exe
 	DEL /S *.log
-	DEL /S obj\\*.o
-
-T_K = $(addsuffix .o, $(addprefix obj/ssl/, $(SOURCES_SSL2)) $(addprefix obj/crypto/, $(SOURCES_CRYPTO)))
+	DEL /S *.o
 
 # libssl-43.dll libtls-15.dll
-main.exe : $(SOURCES) SDL2.dll libcrypto-41.dll $(T_K)
-	$(CC) -o $@ $(CPPFLAGS) $(CFLAGS) $(SOURCES) $(T_K) $(LDFLAGS)
+main.exe : $(OBJECTS) libcrypto-41.dll libssl-43.dll
+	$(CC) -o $@ $(CFLAGS) $(OBJECTS) $(LDFLAGS)
 
-
-obj/%.c.o : $(SDK_PATH_SSL2)%.c
+obj/%.c.o : src/%.c
 	$(CC) -o $@ -c $(CPPFLAGS) $(CFLAGS) $<
 
 SDL2.dll : $(SDK_PATH_SDL)bin\\SDL2.dll

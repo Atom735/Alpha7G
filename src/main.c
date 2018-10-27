@@ -93,101 +93,6 @@ HWND a7CreateAsyncHttpConnection( LPCSTR i_host, LPCSTR i_path ) {
     return CreateWindowEx( WS_EX_OVERLAPPEDWINDOW, TEXT(CLASSNAME_ALPHA7), NULL, WS_OVERLAPPED, CW_USEDEFAULT, CW_USEDEFAULT,CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, g_hInstance, p );
 }
 
-
-static int my_null_write(BIO *h, const char *buf, int num);
-static int my_null_read(BIO *h, char *buf, int size);
-static int my_null_puts(BIO *h, const char *str);
-static int my_null_gets(BIO *h, char *str, int size);
-static long my_null_ctrl(BIO *h, int cmd, long arg1, void *arg2);
-static int my_null_new(BIO *h);
-static int my_null_free(BIO *data);
-
-static const BIO_METHOD my_null_method = {
-    .type = BIO_TYPE_NULL,
-    .name = "NULL",
-    .bwrite = my_null_write,
-    .bread = my_null_read,
-    .bputs = my_null_puts,
-    .bgets = my_null_gets,
-    .ctrl = my_null_ctrl,
-    .create = my_null_new,
-    .destroy = my_null_free
-};
-
-const BIO_METHOD * my_BIO_s_null(void)
-{
-    return (&my_null_method);
-}
-
-static int my_null_new(BIO *bi)
-{
-    LOG( "my_null_new(%p)\n", bi );
-    bi->init = 1;
-    bi->num = 0;
-    bi->ptr = (NULL);
-    return (1);
-}
-
-static int my_null_free(BIO *a)
-{
-    LOG( "my_null_free(%p)\n", a );
-    if (a == NULL)
-        return (0);
-    return (1);
-}
-
-static int my_null_read(BIO *b, char *out, int outl)
-{
-    LOG( "my_null_read(%p, %p, %i)\n", b, out, outl );
-    return (0);
-}
-
-static int my_null_write(BIO *b, const char *in, int inl)
-{
-    LOG( "my_null_write(%p, %p, %i)\n", b, in, inl );
-    return (inl);
-}
-
-static long my_null_ctrl(BIO *b, int cmd, long num, void *ptr)
-{
-    LOG( "my_null_ctrl(%p, %i, %li, %p)\n", b, cmd, num, ptr );
-    long ret = 1;
-
-    switch (cmd) {
-    case BIO_CTRL_RESET:
-    case BIO_CTRL_EOF:
-    case BIO_CTRL_SET:
-    case BIO_CTRL_SET_CLOSE:
-    case BIO_CTRL_FLUSH:
-    case BIO_CTRL_DUP:
-        ret = 1;
-        break;
-    case BIO_CTRL_GET_CLOSE:
-    case BIO_CTRL_INFO:
-    case BIO_CTRL_GET:
-    case BIO_CTRL_PENDING:
-    case BIO_CTRL_WPENDING:
-    default:
-        ret = 0;
-        break;
-    }
-    return (ret);
-}
-
-static int my_null_gets(BIO *bp, char *buf, int size)
-{
-    LOG( "my_null_gets(%p, %p, %i)\n", bp, buf, size );
-    return (0);
-}
-
-static int my_null_puts(BIO *bp, const char *str)
-{
-    LOG( "my_null_puts(%p, %p)\n", bp, str );
-    if (str == NULL)
-        return (0);
-    return (strlen(str));
-}
-
 HWND a7CreateAsyncHttpsConnection( LPCSTR i_host, LPCSTR i_path ) {
     NETWNDDATA *p = (NETWNDDATA*)malloc(sizeof(NETWNDDATA));
     ASSERT_ALLOC(p);
@@ -208,34 +113,30 @@ HWND a7CreateAsyncHttpsConnection( LPCSTR i_host, LPCSTR i_path ) {
 
 
     if( g_ssl_ctx != NULL ) {
-
-        LOG( "BIO_METHOD(%p)\n", my_BIO_s_null() );
-
-
-        BIO *bio = BIO_new( my_BIO_s_null() );
-        LOG( "BIO(%p)\n", bio );
-        SSL *ssl = SSL_new( g_ssl_ctx );
-        LOG( "SSL(%p)\n", ssl );
-
-        LOG( "SSL_set_bio(%p,%p,%p)\n", ssl, bio, bio );
-        SSL_set_bio( ssl, bio, bio );
-
-        LOG( "SSL_connect(%p)\n", ssl );
-        SSL_connect( ssl );
-
-        LOG( "SSL_do_handshake(%p)\n", ssl );
-        SSL_do_handshake( ssl );
-
-        LOG( "SSL_free(%p)\n", ssl );
-        SSL_free( ssl );
-        LOG( "SSL_END()\n" );
-
-
+        p->ssl = SSL_new ( g_ssl_ctx );
+        if ( p->ssl == NULL ) {
+            LOG_ERR( "SSL_new()", 0 );
+            LOG_SSL_ERRORS();
+            goto end;
+        }
+        BIO_new_bio_pair( &p->web, 0, &p->out, 0 );
+        if ( ( p->web == NULL || p->out == NULL ) ) {
+            LOG_ERR( "BIO_new_bio_pair()", 0 );
+            LOG_SSL_ERRORS();
+            goto end;
+        }
+        SSL_set_bio( p->ssl, p->web, p->web );
     } else {
         LOG( "WARNING SSL CONTEXT NOT CREATED\n" );
     }
 
     return CreateWindowEx( WS_EX_OVERLAPPEDWINDOW, TEXT(CLASSNAME_ALPHA7), NULL, WS_OVERLAPPED, CW_USEDEFAULT, CW_USEDEFAULT,CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, g_hInstance, p );
+    end:
+    free( p->req.buf );
+    free( p->res.buf );
+    if( p->ssl ) SSL_free( p->ssl );
+    free( p );
+    return NULL;
 }
 
 LRESULT CALLBACK WndProcWmCreate( HWND hWnd, CREATESTRUCT *cs, NETWNDDATA *nwd ) {
@@ -259,6 +160,8 @@ LRESULT CALLBACK WndProcWmDestroy( HWND hWnd, NETWNDDATA *nwd ) {
     } else {
         if( nwd->pLog ) fclose( nwd->pLog );
         if( nwd->hstn ) free( nwd->hstn );
+        if( nwd->ssl ) SSL_free( nwd->ssl );
+        if( nwd->out ) BIO_free( nwd->out );
         free( nwd );
     }
     --g_wndcount;
@@ -412,80 +315,39 @@ LRESULT WndProcHttpClose( HWND hWnd, NETWNDDATA *nwd, SOCKET s ) {
 LRESULT WndProcHttpsConnect( HWND hWnd, NETWNDDATA *nwd, SOCKET s ) {
     int sock = SSL_get_fd( nwd->ssl );
     int err;
-    if( SSL_set_fd( nwd->ssl, s ) != 1 ) {
-        LOG( "SOCKET(%d \"%s\") OpenSSL >>>", (int)s, nwd->host );
-        LOG_ERR( "SSL_set_fd()", 0 );
-        LOG_WSA_SOCKET_ERR( "SSL_set_fd()", 0 );
-        while ( ( err = ERR_get_error() ) ) {
-            char *str = ERR_error_string( err, 0 );
-            if ( str == NULL ) break;
-            LOG( "OPENSSL >>> %s\n", str );
-            LOG_WSA_SOCKET( "OPENSSL >>> %s\n", str );
-        }
-    }
     err = SSL_connect( nwd->ssl );
-    printf ("SSL connection using %s\n", SSL_get_cipher ( nwd->ssl ));
-
-    err = SSL_write( nwd->ssl, nwd->req.buf, nwd->req.len );
-    if ( err < 0 ) {
+    if( err != 1 ) {
         err = SSL_get_error( nwd->ssl, err );
-        shutdown( s, SD_SEND );
-        switch (err) {
-            case SSL_ERROR_WANT_WRITE:
-                LOG_WSA_SOCKET( "OPENSSL ERR WRITE >>> SSL_ERROR_WANT_WRITE\n" );
-                return 0;
-            case SSL_ERROR_WANT_READ:
-                LOG_WSA_SOCKET( "OPENSSL ERR WRITE >>> SSL_ERROR_WANT_READ\n" );
-                return 0;
-            case SSL_ERROR_ZERO_RETURN:
-                LOG_WSA_SOCKET( "OPENSSL ERR WRITE >>> SSL_ERROR_ZERO_RETURN\n" );
-                return -1;
-            case SSL_ERROR_SYSCALL:
-                LOG_WSA_SOCKET( "OPENSSL ERR WRITE >>> SSL_ERROR_SYSCALL\n" );
-                return -1;
-            case SSL_ERROR_SSL:
-                LOG_WSA_SOCKET( "OPENSSL ERR WRITE >>> SSL_ERROR_SSL\n" );
-                return -1;
-            default:
-                LOG_WSA_SOCKET( "OPENSSL ERR WRITE >>> UNCKNOWN\n" );
-                return -1;
+        switch ( err ) {
+            case SSL_ERROR_NONE: LOG( "ERROR = SSL_ERROR_NONE\n" ); break;
+            case SSL_ERROR_SSL: LOG( "ERROR = SSL_ERROR_SSL\n" ); break;
+            case SSL_ERROR_WANT_READ: LOG( "ERROR = SSL_ERROR_WANT_READ\n" ); break;
+            case SSL_ERROR_WANT_WRITE: LOG( "ERROR = SSL_ERROR_WANT_WRITE\n" ); break;
+            case SSL_ERROR_WANT_X509_LOOKUP: LOG( "ERROR = SSL_ERROR_WANT_X509_LOOKUP\n" ); break;
+            case SSL_ERROR_SYSCALL: LOG( "ERROR = SSL_ERROR_SYSCALL\n" ); break;
+            case SSL_ERROR_ZERO_RETURN: LOG( "ERROR = SSL_ERROR_ZERO_RETURN\n" ); break;
+            case SSL_ERROR_WANT_CONNECT: LOG( "ERROR = SSL_ERROR_WANT_CONNECT\n" ); break;
+            case SSL_ERROR_WANT_ACCEPT: LOG( "ERROR = SSL_ERROR_WANT_ACCEPT\n" ); break;
+        }
+        LOG_SSL_ERRORS();
+        if( err == SSL_ERROR_WANT_READ ) {
+            char data[4096];
+            int data_l = 0;
+            int l;
+            while((l = BIO_read( nwd->out, data+data_l, 4095-data_l ))>0)
+            {
+                LOG( "BIO OUT Readed %d bytes\n", l );
+                data_l += l;
+            }
+            LOG( "BIO OUT Full Readed %d bytes\n", data_l );
+            l = send( s, data, l, 0 );
+            LOG( "NET Sended %d bytes\n", l );
         }
     }
     return 0;
 }
 
 LRESULT WndProcHttpsRead( HWND hWnd, NETWNDDATA *nwd, SOCKET s ) {
-    nwd->flRecv = 0;
-    int err = SSL_read(nwd->ssl, nwd->res.buf, nwd->res.len);
-    if( err > 0 ) nwd->btRecv = err;
-    else {
-        err = SSL_get_error( nwd->ssl, err );
-        shutdown( s, SD_SEND );
-        switch (err) {
-            case SSL_ERROR_WANT_WRITE:
-                LOG_WSA_SOCKET( "OPENSSL ERR READ >>> SSL_ERROR_WANT_WRITE\n" );
-                return 0;
-            case SSL_ERROR_WANT_READ:
-                LOG_WSA_SOCKET( "OPENSSL ERR READ >>> SSL_ERROR_WANT_READ\n" );
-                return 0;
-            case SSL_ERROR_ZERO_RETURN:
-                LOG_WSA_SOCKET( "OPENSSL ERR READ >>> SSL_ERROR_ZERO_RETURN\n" );
-                return -1;
-            case SSL_ERROR_SYSCALL:
-                LOG_WSA_SOCKET( "OPENSSL ERR READ >>> SSL_ERROR_SYSCALL\n" );
-                return -1;
-            case SSL_ERROR_SSL:
-                LOG_WSA_SOCKET( "OPENSSL ERR READ >>> SSL_ERROR_SSL\n" );
-                return -1;
-            default:
-                LOG_WSA_SOCKET( "OPENSSL ERR READ >>> UNCKNOWN\n" );
-                return -1;
-        }
-    }
-
-    nwd->res.buf[nwd->btRecv] = '\0';
-    LOG( "SOCKET(%d \"%s\") RECV %d >>> \n%s\n ========= END =========\n",(int)s, nwd->host, (int)nwd->btRecv, nwd->res.buf );
-    LOG_WSA_SOCKET( ">>> RECV %d >>> \n%s\n ========= END =========\n", (int)nwd->btRecv, nwd->res.buf );
     shutdown( s, SD_SEND );
     return 0;
 }
