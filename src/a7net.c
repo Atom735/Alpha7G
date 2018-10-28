@@ -27,28 +27,33 @@ int g_A7NetConnectsCount = 0;
         long c_clock = clock() - nwd->c_clock;\
         A7LOGFINFO( nwd->log, "clock % 8ld", c_clock );\
         A7LOGFERR_WSA( nwd->log, _fn, _err );\
+        fflush ( nwd->log );\
     }
 
 #define A7LOGNET_WARN_WSA( _fn, _err ) {\
         long c_clock = clock() - nwd->c_clock;\
         A7LOGFINFO( nwd->log, "clock % 8ld", c_clock );\
         A7LOGFWARN_WSA( nwd->log, _fn, _err );\
+        fflush ( nwd->log );\
     }
 
 #define A7LOGNET_INFO( ... ) {\
         long c_clock = clock() - nwd->c_clock;\
         A7LOGFINFO( nwd->log, "clock % 8ld", c_clock );\
         A7LOGFINFO( nwd->log, __VA_ARGS__ );\
+        fflush ( nwd->log );\
     }
 #define A7LOGNET_ERRCS( _fn, _err, _errs ) {\
         long c_clock = clock() - nwd->c_clock;\
         A7LOGFINFO( nwd->log, "clock % 8ld", c_clock );\
         A7LOGFERRCS( nwd->log, _fn, _err, _errs );\
+        fflush ( nwd->log );\
     }
 #define A7LOGNET_ERR( ... ) {\
         long c_clock = clock() - nwd->c_clock;\
         A7LOGFINFO( nwd->log, "clock % 8ld", c_clock );\
         A7LOGFERR( nwd->log, __VA_ARGS__ );\
+        fflush ( nwd->log );\
     }
 
 typedef struct _S7NETWNDCREATE {
@@ -73,7 +78,8 @@ typedef struct _S7NETWNDDATA {
     char *hostname;
     char *buf;
     int bufS, bufR;
-    FILE *log;
+    FILE *log, *foo;
+
     long c_clock;
     int state;
     SSL *ssl;
@@ -95,6 +101,14 @@ static void A7NetWndDataFree( S7NETWNDDATA *nwd ) {
         timeinfo = localtime ( &rawtime );
         fprintf ( nwd->log, " ====== %s", asctime ( timeinfo ) );
         fclose ( nwd->log );
+    }
+    if ( nwd->foo != NULL ) {
+        time_t rawtime;
+        struct tm * timeinfo;
+        time ( &rawtime );
+        timeinfo = localtime ( &rawtime );
+        fprintf ( nwd->foo, "\n ====== %s", asctime ( timeinfo ) );
+        fclose ( nwd->foo );
     }
     free ( nwd );
 }
@@ -148,6 +162,26 @@ static LRESULT A7NetWndPCreate ( HWND hWnd, S7NETWNDCREATE *nwc ) {
         time ( &rawtime );
         timeinfo = localtime ( &rawtime );
         fprintf ( nwd->log, " ====== %s", asctime ( timeinfo ) );
+        nwd->c_clock = clock();
+    }
+
+    {
+        char str[128];
+        int i=0;
+        nwd->foo = NULL;
+        while ( 1 ) {
+            snprintf( str, 127, "res %d %s %05d.log", nwd->port, nwd->hostname, i );
+            ++i;
+            nwd->foo = fopen ( str, "r" );
+            if ( nwd->foo != NULL ) fclose( nwd->foo );
+            else break;
+        }
+        nwd->foo = fopen ( str, "w" );
+        time_t rawtime;
+        struct tm * timeinfo;
+        time ( &rawtime );
+        timeinfo = localtime ( &rawtime );
+        fprintf ( nwd->foo, " ====== %s", asctime ( timeinfo ) );
         nwd->c_clock = clock();
     }
 
@@ -324,6 +358,7 @@ static void A7NetWndPSelect_ssl2net ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
             int err = WSAGetLastError();
             A7LOGERR_WSA ( "send", err );
             A7LOGNET_ERR_WSA ( "send", err );
+            assert ( 0 /* TODO: we can leak bytes with this trouble... */ );
         }
     }
 }
@@ -331,6 +366,12 @@ static void A7NetWndPSelect_net2ssl ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
     char d[4096];
     int l;
     while ( ( l = recv ( s, d, 4096, 0 ) ) != SOCKET_ERROR ) {
+        if( l <= 0 ) {
+            int err = WSAGetLastError();
+            A7LOGERR_WSA ( "recv", err );
+            A7LOGNET_ERR_WSA ( "recv", err );
+            break;
+        }
         int k = 0;
         int r = l;
         while ( ( k < r ) && ( ( l = BIO_write ( nwd->net, d + k, r - k ) ) > 0 ) ) k += l;
@@ -350,12 +391,57 @@ static void A7NetWndPSelect_net2ssl ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
     }
 }
 
+static void A7NetWndPSelect_net2ssl2file ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
+    char d[4096];
+    int l;
+    while ( ( l = recv ( s, d, 4096, 0 ) ) != SOCKET_ERROR ) {
+        if( l <= 0 ) {
+            int err = WSAGetLastError();
+            A7LOGERR_WSA ( "recv", err );
+            A7LOGNET_ERR_WSA ( "recv", err );
+            break;
+        }
+        int k = 0;
+        int r = l;
+        while ( ( k < r ) && ( ( l = BIO_write ( nwd->net, d + k, r - k ) ) > 0 ) ) k += l;
+
+        A7LOGINFO ( "net2ssl %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
+        A7LOGNET_INFO ( "net2ssl %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
+
+        while ( ( l = SSL_read ( nwd->ssl, d, 4096 ) ) > 0 ) {
+            fwrite ( d, 1, l, nwd->foo );
+            fflush ( nwd->foo );
+        }
+        if ( l <= 0 ) {
+            int err = SSL_get_error ( nwd->ssl, l );
+            A7LOGERRCS ( "SSL_read", err, A7Err_SSL_get_error ( err ) );
+            A7LOGNET_ERRCS ( "SSL_read", err, A7Err_SSL_get_error ( err ) );
+            A7NetErrSslStack();
+        }
+    }
+    if ( l == SOCKET_ERROR ) {
+        int err = WSAGetLastError();
+        if ( err == WSAEWOULDBLOCK ) {
+            A7LOGWARN_WSA ( "recv", err );
+            A7LOGNET_WARN_WSA ( "recv", err );
+        } else {
+            A7LOGERR_WSA ( "recv", err );
+            A7LOGNET_ERR_WSA ( "recv", err );
+        }
+    }
+
+}
+
 static void A7NetWndPSelect_trySslConnect ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
     int err = SSL_connect ( nwd->ssl );
     if ( err == 1 ) {
         nwd->state = A7NWDS_TLS_CONNECT;
         A7LOGINFO ( "tls connected SOCKET(%p) SSL(%p)", (void*)s, nwd->ssl );
         A7LOGNET_INFO ( "tls connected SOCKET(%p) SSL(%p)", (void*)s, nwd->ssl );
+        const char * c = SSL_get_cipher ( nwd->ssl );
+        A7LOGINFO ( "SOCKET(%p) SSL(%p) CIPHER = %s", (void*)s, nwd->ssl, c );
+        A7LOGNET_INFO ( "SOCKET(%p) SSL(%p) CIPHER = %s", (void*)s, nwd->ssl, c );
+
         return;
     }
     if ( err == 0 )  {
@@ -365,24 +451,42 @@ static void A7NetWndPSelect_trySslConnect ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET
     A7LOGERRCS ( "SSL_connect", err, A7Err_SSL_get_error ( err ) );
     A7LOGNET_ERRCS ( "SSL_connect", err, A7Err_SSL_get_error ( err ) );
     A7NetErrSslStack();
-    A7NetWndPSelect_ssl2net ( hWnd, nwd, s );
 }
 
 static LRESULT A7NetWndPSelectRead ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
     if ( nwd->state == A7NWDS_TLS_CREATED ) {
         A7NetWndPSelect_net2ssl ( hWnd, nwd, s );
         A7NetWndPSelect_trySslConnect ( hWnd, nwd, s );
+        A7NetWndPSelect_ssl2net ( hWnd, nwd, s );
     }
     if ( nwd->state == A7NWDS_TLS_CONNECT ) {
-        shutdown ( s, SD_SEND );
-        // char str[] = "GEt"
-        // SSL_write ( nwd->ssl,  );
+        char buf[512];
+        int sz = snprintf ( buf, 511, "GET / HTTP/1.1\r\nHost: api.vk.com\r\nConnection: close\r\n\r\n", nwd->hostname );
+        int k = 0;
+        int l;
+        while ( ( k < sz ) && ( l = SSL_write ( nwd->ssl, buf+k, sz-k ) ) > 0 )
+            k += l;
+        A7NetWndPSelect_ssl2net ( hWnd, nwd, s );
+        // shutdown ( s, SD_SEND );
+        nwd->state = A7NWDS_TLS_READY;
+    }
+    if ( nwd->state == A7NWDS_TLS_READY ) {
+        A7NetWndPSelect_net2ssl2file ( hWnd, nwd, s );
     }
     return 0;
 }
 static LRESULT A7NetWndPSelectWrite ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
-    if ( nwd->state == A7NWDS_TLS_CREATED )
+    if ( nwd->state == A7NWDS_TLS_CREATED ) {
         A7NetWndPSelect_trySslConnect ( hWnd, nwd, s );
+        A7NetWndPSelect_ssl2net ( hWnd, nwd, s );
+    }
+    // if ( nwd->state == A7NWDS_TLS_CONNECT ) {
+    //     char buf[512];
+    //     int sz = snprintf ( buf, 511, "GET %s HTTP/1.1\r\nHost: %s\r\n\r\n",
+    //         "/", nwd->hostname );
+    //     SSL_write ( nwd->ssl, buf, sz );
+    //     A7NetWndPSelect_ssl2net ( hWnd, nwd, s );
+    // }
     return 0;
 }
 
