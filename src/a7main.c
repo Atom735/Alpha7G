@@ -17,14 +17,13 @@ int APIENTRY wWinMain ( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpC
     if ( A7LogOpen ( NULL ) != 0 ) return (-1);
     if ( A7NetInit ( hInstance ) != 0 ) goto end;
 
-    A7NetConnect ( "vk.com", 443, 1 );
+    A7NetConnect ( "vk.com", 80, 0 );
+    A7NetConnect ( "example.com", 80, 0 );
+    A7NetConnect ( "yandex.com", 80, 0 );
 
-    // a7CreateAsyncHttpConnection( "example.com", NULL );
-    // a7CreateAsyncHttpConnection( "vk.com", NULL );
-    // a7CreateAsyncHttpConnection( "yandex.ru", NULL );
-    // a7CreateAsyncHttpsConnection( "example.com", NULL );
-    // a7CreateAsyncHttpsConnection( "vk.com", NULL );
-    // a7CreateAsyncHttpsConnection( "yandex.ru", NULL );
+    A7NetConnect ( "vk.com", 443, 1 );
+    A7NetConnect ( "example.com", 443, 1 );
+    A7NetConnect ( "yandex.com", 443, 1 );
 
     while ( ( g_A7NetConnectsCount != 0 ) && ( GetMessage ( &msg, NULL, 0, 0) ) ) {
         TranslateMessage( &msg );

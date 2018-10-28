@@ -328,8 +328,6 @@ static LRESULT A7NetWndPSelectConnect ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s )
         nwd->state = A7NWDS_TLS_CREATED;
         A7LOGINFO ( "TLS created SOCKET(%p) SSL(%p)", (void*)s, nwd->ssl );
         A7LOGNET_INFO ( "TLS created SOCKET(%p) SSL(%p)", (void*)s, nwd->ssl );
-    } else {
-        assert ( 0!=/*TODO*/0+0 );
     }
 
     return 0;
@@ -401,22 +399,26 @@ static void A7NetWndPSelect_net2ssl2file ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET 
             A7LOGNET_ERR_WSA ( "recv", err );
             break;
         }
-        int k = 0;
-        int r = l;
-        while ( ( k < r ) && ( ( l = BIO_write ( nwd->net, d + k, r - k ) ) > 0 ) ) k += l;
+        if ( nwd->ssl != NULL ) {
+            int k = 0;
+            int r = l;
+            while ( ( k < r ) && ( ( l = BIO_write ( nwd->net, d + k, r - k ) ) > 0 ) ) k += l;
 
-        A7LOGINFO ( "net2ssl %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
-        A7LOGNET_INFO ( "net2ssl %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
-
-        while ( ( l = SSL_read ( nwd->ssl, d, 4096 ) ) > 0 ) {
+            A7LOGINFO ( "net2ssl %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
+            A7LOGNET_INFO ( "net2ssl %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
+            while ( ( l = SSL_read ( nwd->ssl, d, 4096 ) ) > 0 ) {
+                fwrite ( d, 1, l, nwd->foo );
+                fflush ( nwd->foo );
+            }
+            if ( l <= 0 ) {
+                int err = SSL_get_error ( nwd->ssl, l );
+                A7LOGERRCS ( "SSL_read", err, A7Err_SSL_get_error ( err ) );
+                A7LOGNET_ERRCS ( "SSL_read", err, A7Err_SSL_get_error ( err ) );
+                A7NetErrSslStack();
+            }
+        } else {
             fwrite ( d, 1, l, nwd->foo );
             fflush ( nwd->foo );
-        }
-        if ( l <= 0 ) {
-            int err = SSL_get_error ( nwd->ssl, l );
-            A7LOGERRCS ( "SSL_read", err, A7Err_SSL_get_error ( err ) );
-            A7LOGNET_ERRCS ( "SSL_read", err, A7Err_SSL_get_error ( err ) );
-            A7NetErrSslStack();
         }
     }
     if ( l == SOCKET_ERROR ) {
@@ -429,7 +431,6 @@ static void A7NetWndPSelect_net2ssl2file ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET 
             A7LOGNET_ERR_WSA ( "recv", err );
         }
     }
-
 }
 
 static void A7NetWndPSelect_trySslConnect ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
@@ -461,7 +462,7 @@ static LRESULT A7NetWndPSelectRead ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
     }
     if ( nwd->state == A7NWDS_TLS_CONNECT ) {
         char buf[512];
-        int sz = snprintf ( buf, 511, "GET / HTTP/1.1\r\nHost: api.vk.com\r\nConnection: close\r\n\r\n", nwd->hostname );
+        int sz = snprintf ( buf, 511, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", nwd->hostname );
         int k = 0;
         int l;
         while ( ( k < sz ) && ( l = SSL_write ( nwd->ssl, buf+k, sz-k ) ) > 0 )
@@ -473,9 +474,32 @@ static LRESULT A7NetWndPSelectRead ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
     if ( nwd->state == A7NWDS_TLS_READY ) {
         A7NetWndPSelect_net2ssl2file ( hWnd, nwd, s );
     }
+    if ( nwd->state == A7NWDS_READY ) {
+        A7NetWndPSelect_net2ssl2file ( hWnd, nwd, s );
+    }
+
     return 0;
 }
 static LRESULT A7NetWndPSelectWrite ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
+    if ( nwd->state == A7NWDS_CONNECTED ) {
+        char buf[512];
+        int sz = snprintf ( buf, 511, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", nwd->hostname );
+        int k = 0;
+        int l;
+        while ( ( k < sz ) && ( l = send ( s, buf+k, sz-k, 0 ) ) > 0 )
+            k += l;
+
+        if ( l == SOCKET_ERROR ) {
+            int err = WSAGetLastError();
+            A7LOGERR_WSA ( "send", err );
+            A7LOGNET_ERR_WSA ( "send", err );
+            assert ( 0 /* TODO: we can leak bytes with this trouble... */ );
+        }
+
+        nwd->state = A7NWDS_READY;
+    }
+
+
     if ( nwd->state == A7NWDS_TLS_CREATED ) {
         A7NetWndPSelect_trySslConnect ( hWnd, nwd, s );
         A7NetWndPSelect_ssl2net ( hWnd, nwd, s );
