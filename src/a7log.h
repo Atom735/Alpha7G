@@ -4,6 +4,7 @@
 #include <StdArg.h>
 #include <StdIO.h>
 
+
 extern int A7LogOpen ( char const * fileName );
 extern void A7LogClose ( void );
 

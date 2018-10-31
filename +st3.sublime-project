@@ -29,19 +29,11 @@
             "name": "mingw-make",
             "cmd": ["$project_path\\+build.bat"],
         }
-    ]
-
-    /*
-    access_token=4031e8e12d1f27eb39c9aee3155cb56e28271937f59a52cc5987e848746eb8355ea0ac6c3e9c6897f7c0e
-    expires_in=0
-    user_id=27185694
-    state=WelcomeAtom735https://oauth.vk.com/blank.html
-
-    https://api.vk.com/method/METHOD_NAME?PARAMETERS&access_token=ACCESS_TOKEN&v=V
-
-    messages.getConversations
+    ],
+    "settings":
+    {
+        "color_scheme": "A7Mariana.sublime-color-scheme",
+    },
 
 
-    https://api.vk.com/method/messages.getConversations?access_token=4031e8e12d1f27eb39c9aee3155cb56e28271937f59a52cc5987e848746eb8355ea0ac6c3e9c6897f7c0e&v=5.87&count=200
-    */
 }

@@ -29,6 +29,7 @@ clean:
 	DEL /S *.dll
 	DEL /S *.exe
 	DEL /S *.log
+	DEL /S *.a7-log
 	DEL /S *.o
 
 # libssl-43.dll libtls-15.dll
@@ -37,6 +38,8 @@ main.exe : $(OBJECTS) libcrypto-41.dll libssl-43.dll
 
 obj/%.c.o : src/%.c
 	$(CC) -o $@ -c $(CPPFLAGS) $(CFLAGS) $<
+
+
 
 SDL2.dll : $(SDK_PATH_SDL)bin\\SDL2.dll
 	COPY $^ $@

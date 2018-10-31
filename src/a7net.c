@@ -13,685 +13,460 @@
 #include "a7err.h"
 #include "a7net.h"
 
-#define _A7NET_WND_CLASS_NAME "CLN-Alpha7G-IP/NET"
-#define _A7NEW_WND_BUF_SIZE (64*1024)
+/* Порт DNS сервера */
+#define _A7PORT_DNS 53
 
-static WSADATA g_WSAData = {0};
-static int g_A7NetErr = 0;
-static HINSTANCE g_A7NetInstance = NULL;
-static SSL_CTX *g_A7NetCtx = NULL;
+/* Имя класса окна A7NET */
+#define _A7NET_WND_CLASS_NAME "WCN-Alpha7G-A7NET"
+/* Макросы получения типа события и ошибки из lParam */
+#define GET_WM_WSA_EVENT( lParam )  LOWORD ( lParam )
+#define GET_WM_WSA_ERROR( lParam )  HIWORD ( lParam )
+/* Макрос номера сообщения A7NET */
+#define WM_WSA_SELECT   ( WM_USER + 1 )
 
-int g_A7NetConnectsCount = 0;
 
-#define A7LOGNET_ERR_WSA( _fn, _err ) {\
-        long c_clock = clock() - nwd->c_clock;\
-        A7LOGFINFO( nwd->log, "clock % 8ld", c_clock );\
-        A7LOGFERR_WSA( nwd->log, _fn, _err );\
-        fflush ( nwd->log );\
-    }
+/* Данные WSA */
+static WSADATA      g_A7NetWsaData  = {0};
+/* Instance приложения */
+static HINSTANCE    g_A7NetInstance = NULL;
+/* SSL контекст библиотеки OpenSSL */
+static SSL_CTX     *g_A7NetCtx      = NULL;
 
-#define A7LOGNET_WARN_WSA( _fn, _err ) {\
-        long c_clock = clock() - nwd->c_clock;\
-        A7LOGFINFO( nwd->log, "clock % 8ld", c_clock );\
-        A7LOGFWARN_WSA( nwd->log, _fn, _err );\
-        fflush ( nwd->log );\
-    }
+int     g_A7NetConnectsCount    = 0;
 
-#define A7LOGNET_INFO( ... ) {\
-        long c_clock = clock() - nwd->c_clock;\
-        A7LOGFINFO( nwd->log, "clock % 8ld", c_clock );\
-        A7LOGFINFO( nwd->log, __VA_ARGS__ );\
-        fflush ( nwd->log );\
-    }
-#define A7LOGNET_ERRCS( _fn, _err, _errs ) {\
-        long c_clock = clock() - nwd->c_clock;\
-        A7LOGFINFO( nwd->log, "clock % 8ld", c_clock );\
-        A7LOGFERRCS( nwd->log, _fn, _err, _errs );\
-        fflush ( nwd->log );\
-    }
-#define A7LOGNET_ERR( ... ) {\
-        long c_clock = clock() - nwd->c_clock;\
-        A7LOGFINFO( nwd->log, "clock % 8ld", c_clock );\
-        A7LOGFERR( nwd->log, __VA_ARGS__ );\
-        fflush ( nwd->log );\
-    }
-
-typedef struct _S7NETWNDCREATE {
-    int port;
-    char const *hostname;
-    int tls;
-} S7NETWNDCREATE;
-
-enum {
-    A7NWDS_NULL = 0, /* Когда нет сокета */
-    A7NWDS_CREATED, /* Когда сокет создан и ждет подключения */
-    A7NWDS_CONNECTED, /* Когда сокет подключен */
-    A7NWDS_READY, /* Готов к передаче */
-
-    A7NWDS_TLS_CREATED, /* TLS создан */
-    A7NWDS_TLS_CONNECT, /* TLS пытаеться подключиться */
-    A7NWDS_TLS_READY, /* TLS готов к передаче */
-};
-
-typedef struct _S7NETWNDDATA {
-    int port;
-    char *hostname;
-    char *buf;
-    int bufS, bufR;
-    FILE *log, *foo;
-
-    long c_clock;
-    int state;
-    SSL *ssl;
-    BIO *app, *net;
-
-} S7NETWNDDATA;
-
-static void A7NetWndDataFree( S7NETWNDDATA *nwd ) {
-    assert ( nwd != NULL );
-    assert ( nwd->hostname != NULL );
-    free ( nwd->hostname );
-    if ( nwd->buf != NULL ) free ( nwd->buf );
-    if ( nwd->ssl ) SSL_free ( nwd->ssl );
-    if ( nwd->net ) BIO_free ( nwd->net );
-    if ( nwd->log != NULL ) {
-        time_t rawtime;
-        struct tm * timeinfo;
-        time ( &rawtime );
-        timeinfo = localtime ( &rawtime );
-        fprintf ( nwd->log, " ====== %s", asctime ( timeinfo ) );
-        fclose ( nwd->log );
-    }
-    if ( nwd->foo != NULL ) {
-        time_t rawtime;
-        struct tm * timeinfo;
-        time ( &rawtime );
-        timeinfo = localtime ( &rawtime );
-        fprintf ( nwd->foo, "\n ====== %s", asctime ( timeinfo ) );
-        fclose ( nwd->foo );
-    }
-    free ( nwd );
+static int A7NetLogV ( S7WDA7NET *p, const char * fmt, va_list args ) {
+    if ( p == NULL ) return -1;
+    if ( p -> fLog == NULL ) return -1;
+    int n = vfprintf ( p -> fLog, fmt, args );
+    fflush ( p -> fLog );
+    return n;
 }
 
-
-HWND A7NetConnect ( const char *hostname, int port, int tls ) {
-    S7NETWNDCREATE _nwc = {
-        .port = port,
-        .hostname = hostname,
-        .tls = tls,
-    };
-    return CreateWindowEx ( WS_EX_OVERLAPPEDWINDOW, TEXT ( _A7NET_WND_CLASS_NAME ), NULL, WS_OVERLAPPED, CW_USEDEFAULT, CW_USEDEFAULT,CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, g_A7NetInstance, &_nwc );
+static int A7NetLog ( S7WDA7NET *p, const char * fmt, ... ) {
+    if ( p == NULL ) return -1;
+    if ( p -> fLog == NULL ) return -1;
+    va_list args;
+    va_start ( args, fmt );
+    int n = A7NetLogV ( p, fmt, args );
+    va_end ( args );
+    fflush ( p -> fLog );
+    return n;
 }
 
-static void A7NetErrSslStack ( void ) {
-    int err;
-    while ( ( err = ERR_get_error() ) ) {
-        char *str = ERR_error_string ( err, 0);
-        if (!str) return;
-        A7LOGERRCS ( "A7NetErrSslStack", err, str );
-    }
-}
+#include "a7net_log.c"
 
-static LRESULT A7NetWndPCreate ( HWND hWnd, S7NETWNDCREATE *nwc ) {
-    assert ( nwc != NULL );
-    assert ( nwc->hostname != NULL );
-    S7NETWNDDATA *nwd = ( S7NETWNDDATA* ) malloc ( sizeof ( S7NETWNDDATA ) );
-    SetWindowLongPtr( hWnd, GWLP_USERDATA, (LONG_PTR)nwd );
-    assert ( nwd != NULL );
-    nwd->hostname = ( char* ) malloc ( strlen ( nwc->hostname ) + 1 );
-    assert ( nwd->hostname != NULL );
-    nwd->port = nwc->port;
-    strcpy ( nwd->hostname, nwc->hostname );
-    nwd->buf = ( char* ) malloc ( ( nwc->tls != 0 ) ? _A7NEW_WND_BUF_SIZE : MAXGETHOSTSTRUCT );
-    assert ( nwd->buf != NULL );
-
-    {
-        char str[128];
-        int i=0;
-        nwd->log = NULL;
-        while ( 1 ) {
-            snprintf( str, 127, "log %d %s %05d.log", nwd->port, nwd->hostname, i );
-            ++i;
-            nwd->log = fopen ( str, "r" );
-            if ( nwd->log != NULL ) fclose( nwd->log );
-            else break;
-        }
-        nwd->log = fopen ( str, "w" );
-        time_t rawtime;
-        struct tm * timeinfo;
-        time ( &rawtime );
-        timeinfo = localtime ( &rawtime );
-        fprintf ( nwd->log, " ====== %s", asctime ( timeinfo ) );
-        nwd->c_clock = clock();
-    }
-
-    {
-        char str[128];
-        int i=0;
-        nwd->foo = NULL;
-        while ( 1 ) {
-            snprintf( str, 127, "res %d %s %05d.log", nwd->port, nwd->hostname, i );
-            ++i;
-            nwd->foo = fopen ( str, "r" );
-            if ( nwd->foo != NULL ) fclose( nwd->foo );
-            else break;
-        }
-        nwd->foo = fopen ( str, "w" );
-        time_t rawtime;
-        struct tm * timeinfo;
-        time ( &rawtime );
-        timeinfo = localtime ( &rawtime );
-        fprintf ( nwd->foo, " ====== %s", asctime ( timeinfo ) );
-        nwd->c_clock = clock();
-    }
-
-    nwd->state = A7NWDS_NULL;
-    nwd->app = NULL;
-    nwd->net = NULL;
-    nwd->ssl = ( nwc->tls != 0 ) ? ( void* )( 1 ) : NULL;
-
-    nwd->bufS = 0;
-    nwd->bufR = 0;
-
+/* Функция обарботчик сообщения WM_CREATE */
+static LRESULT A7NetOnCreate ( HWND hWnd, S7WDA7NETCRT *pCRT ) {
     ++g_A7NetConnectsCount;
 
-    if ( WSAAsyncGetHostByName ( hWnd, WM_WSA_GETHOSTBYNAME, nwd->hostname, nwd->buf, MAXGETHOSTSTRUCT ) == NULL ) {
-        int err = WSAGetLastError();
-        A7LOGERR_WSA ( "WSAAsyncGetHostByName", err );
-        A7LOGNET_ERR_WSA ( "WSAAsyncGetHostByName", err );
-        return (-1);
+    S7WDA7NET *p = ( S7WDA7NET* ) malloc ( sizeof ( S7WDA7NET ) );
+
+    p -> hWnd   = hWnd;
+    p -> iSock  = INVALID_SOCKET;
+    p -> bTls   = 0;
+    p -> pCBS   = pCRT -> pCBS;
+    p -> szText = NULL;
+    p -> fLog   = NULL;
+    p -> nClock = 0;
+
+    SetWindowLongPtr( hWnd, GWLP_USERDATA, ( LONG_PTR ) p );
+
+    BYTE *pIP   = pCRT -> aIp;
+    BOOL bIPv4  = (!(pCRT -> bForceV6)) &&
+        (pIP[000]==0x00) && (pIP[001]==0x00) &&
+        (pIP[002]==0x00) && (pIP[003]==0x00) &&
+        (pIP[004]==0x00) && (pIP[005]==0x00) &&
+        (pIP[006]==0x00) && (pIP[007]==0x00) &&
+        (pIP[010]==0x00) && (pIP[011]==0x00) &&
+        (pIP[012]==0xff) && (pIP[013]==0xff);
+
+    /// Create name and open log file
+    {
+        CHAR str[256];
+        INT i = 0;
+        if ( bIPv4 ) {
+            i = snprintf ( str, 255, "A7NETv4 "
+                "%d.%d.%d.%d:%d",
+                pIP[014], pIP[015], pIP[016], pIP[017], pCRT -> nPort );
+        } else {
+            UINT16 *pIP16 = ( UINT16* ) pIP;
+            i = snprintf ( str, 255, "A7NETv6 "
+                "%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x/%d",
+                htons(pIP16[0]), htons(pIP16[1]), htons(pIP16[2]), htons(pIP16[3]),
+                htons(pIP16[4]), htons(pIP16[5]), htons(pIP16[6]), htons(pIP16[7]),
+                pCRT -> nPort );
+        }
+        p -> szText = ( CHAR* ) malloc ( i + 1 );
+        memcpy ( p -> szText, str, i + 1 );
+        int j = 0;
+        while (1) {
+            if ( bIPv4 ) {
+                i = snprintf ( str, 255, "A7NETv4 %d-%d_%d_%d_%d.%d.a7-log",
+                    pCRT -> nPort, pIP[014], pIP[015], pIP[016], pIP[017], j );
+            } else {
+                UINT16 *pIP16 = ( UINT16* ) pIP;
+                i = snprintf ( str, 255, "A7NETv6 %d-"
+                    "%04x_%04x_%04x_%04x_%04x_%04x_%04x_%04x.%d.a7-log",
+                    pCRT -> nPort,
+                    htons(pIP16[0]), htons(pIP16[1]), htons(pIP16[2]), htons(pIP16[3]),
+                    htons(pIP16[4]), htons(pIP16[5]), htons(pIP16[6]), htons(pIP16[7]),
+                    j );
+            }
+            p -> fLog = fopen ( str, "r" );
+            if ( p -> fLog == NULL ) break;
+            fclose ( p -> fLog );
+            ++j;
+        }
+        p -> fLog = fopen ( str, "w" );
+        time_t rawtime;
+        time ( &rawtime );
+        A7NetLog ( p, "@^ %s", asctime ( localtime ( &rawtime ) ) );
+        p -> nClock = clock();
+        A7NetLog ( p, "    Clock of start: %lu\n", p -> nClock );
+        A7NetLog ( p, "    Name: %s\n", p -> szText );
     }
 
-    A7LOGNET_INFO ( "created window WND(%p)", hWnd );
+    if ( bIPv4 ) {
+        SOCKADDR_IN sa;
+        memset ( &sa, 0, sizeof ( sa ) );
+        sa.sin_family     = AF_INET,
+        sa.sin_port       = htons ( pCRT -> nPort ),
+        memcpy ( &sa.sin_addr, pIP+014, 4 );
+        if ( ( p -> iSock = socket ( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ) == INVALID_SOCKET ) {
+            A7NetLog_socket ( p, WSAGetLastError(), TRUE );
+            return (-1);
+        } else {
+            A7NetLog_socket ( p, 0, TRUE );
+        }
+        /// Set socket to async non-block
+        if ( WSAAsyncSelect ( p -> iSock, hWnd, WM_WSA_SELECT, FD_CONNECT|FD_READ|FD_WRITE|FD_CLOSE ) != 0 ) {
+            A7NetLog_WSAAsyncSelect ( p, WSAGetLastError() );
+            return (-1);
+        } else {
+            A7NetLog_WSAAsyncSelect ( p, 0 );
+        }
+        /// Socket connection to server
+        if( connect ( p -> iSock, ( LPSOCKADDR )( &sa ), sizeof ( sa ) ) != 0 ) {
+            int err = WSAGetLastError();
+            A7NetLog_connect( p, err );
+            if ( err != WSAEWOULDBLOCK ) {
+                return (-1);
+            }
+        } else {
+            A7NetLog_connect( p, 0 );
+        }
+    } else {
+        SOCKADDR_IN6 sa;
+        memset ( &sa, 0, sizeof ( sa ) );
+        sa.sin6_family    = AF_INET6,
+        sa.sin6_port      = htons ( pCRT -> nPort ),
+        memcpy ( &sa.sin6_addr, pIP, 16 );
+        if ( ( p -> iSock = socket ( AF_INET6, SOCK_STREAM, IPPROTO_TCP ) ) == INVALID_SOCKET ) {
+            A7NetLog_socket ( p, WSAGetLastError(), TRUE );
+            return (-1);
+        } else {
+            A7NetLog_socket ( p, 0, TRUE );
+        }
+        /// Set socket to async non-block
+        if ( WSAAsyncSelect ( p -> iSock, hWnd, WM_WSA_SELECT, FD_CONNECT|FD_READ|FD_WRITE|FD_CLOSE ) != 0 ) {
+            A7NetLog_WSAAsyncSelect ( p, WSAGetLastError() );
+            return (-1);
+        } else {
+            A7NetLog_WSAAsyncSelect ( p, 0 );
+        }
+        /// Socket connection to server
+        if( connect ( p -> iSock, ( LPSOCKADDR )( &sa ), sizeof ( sa ) ) != 0 ) {
+            int err = WSAGetLastError();
+            A7NetLog_connect( p, err );
+            if ( err != WSAEWOULDBLOCK ) {
+                return (-1);
+            }
+        } else {
+            A7NetLog_connect( p, 0 );
+        }
+    }
     return (0);
 }
 
-static LRESULT A7NetWndPDestroy ( HWND hWnd, S7NETWNDDATA *nwd ) {
-    assert ( nwd != NULL );
-
-    A7LOGNET_INFO ( "destroyed window WND(%p)", hWnd );
-    A7NetWndDataFree ( nwd );
+/* Функция обарботчик сообщения WM_DESTROY */
+static LRESULT A7NetOnDestroy ( HWND hWnd, S7WDA7NET *p ) {
+    if ( p != NULL ) {
+        if ( p -> fLog != NULL ) {
+            time_t rawtime;
+            time ( &rawtime );
+            long unsigned c = clock();
+            A7NetLog ( p, "@$ %s", asctime ( localtime ( &rawtime ) ) );
+            A7NetLog ( p, "    Clock of end: %lu\n", c );
+            A7NetLog ( p, "    Name: %s\n", p -> szText );
+            A7NetLog ( p, "    Socket: %i\n", p -> iSock );
+            A7NetLog ( p, "    Clock of run: %lu\n", c - p -> nClock );
+            fclose ( p -> fLog );
+        }
+        if ( p -> iSock != INVALID_SOCKET ) {
+            closesocket ( p -> iSock );
+        }
+        if ( p -> szText != NULL ) {
+            free ( p -> szText );
+        }
+        free ( p );
+    }
     --g_A7NetConnectsCount;
-    return 0;
+    return (0);
 }
 
-static LRESULT A7NetWndPGetHostByName ( HWND hWnd, S7NETWNDDATA *nwd, HANDLE _h, int err, int buflen ) {
-    assert ( nwd != NULL );
 
-    if( err != 0 ) {
-        A7LOGERR_WSA ( "WSAAsyncGetHostByName IN EVENT", err );
-        A7LOGNET_ERR_WSA ( "WSAAsyncGetHostByName IN EVENT", err );
-        DestroyWindow( hWnd );
-        return 0;
-    }
-
-    HOSTENT *host = ( HOSTENT* ) nwd->buf;
-    if( host == NULL ) {
-        A7LOGERRCS ( "hostent is null", 0, "NULL" );
-        A7LOGNET_ERRCS ( "hostent is null", 0, "NULL" );
-        DestroyWindow ( hWnd );
-    } else {
-        char info[512];
-        int sz=0;
-        sz += snprintf ( info+sz, 511-sz, "      name   -> %s\n", host->h_name );
-        sz += snprintf ( info+sz, 511-sz, "      buflen -> %d\n", buflen );
-        for ( char **ch = host->h_aliases; *ch != NULL; ++ch )
-            sz += snprintf ( info+sz, 511-sz, "      alias  -> %s\n", *ch );
-        sz += snprintf ( info+sz, 511-sz, "      length -> %d\n", (int)host->h_length );
-        for ( char **ch = host->h_addr_list; *ch != NULL; ++ch ) {
-            sz += snprintf ( info+sz, 511-sz, "      addr   -> %d", (int)(u_char)((*ch)[0]) );
-            for ( int i=1; i<(int)host->h_length; ++i )
-                sz += snprintf ( info+sz, 511-sz, ".%d", (int)(u_char)((*ch)[i]) );
-            sz += snprintf ( info+sz, 511-sz, "\n" );
-        }
-        A7LOGNET_INFO ( "%d\n%s", sz, info );
-        /// Creation soket
-        SOCKET s = INVALID_SOCKET;
-        #ifdef DEF_FUNC_WSA
-        if ( ( s = WSASocket ( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0 ) ) == INVALID_SOCKET )
-        #else
-        if ( ( s = socket ( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ) == INVALID_SOCKET )
-        #endif
-        {
-            err = WSAGetLastError();
-            A7LOGERR_WSA ( "WSASocket", err );
-            A7LOGNET_ERR_WSA ( "WSASocket", err );
-            DestroyWindow ( hWnd );
-            return 0;
-        }
-
-
-        nwd->state = A7NWDS_CREATED;
-        A7LOGINFO ( "socket created SOCKET(%p)", (void*)s );
-        A7LOGNET_INFO ( "socket created SOCKET(%p)", (void*)s );
-
-        /// Set socket to async non-block
-        if ( WSAAsyncSelect ( s, hWnd, WM_WSA_SELECT, FD_CONNECT|FD_READ|FD_WRITE|FD_CLOSE ) == SOCKET_ERROR ) {
-            err = WSAGetLastError();
-            A7LOGERR_WSA ( "WSAAsyncSelect", err );
-            A7LOGNET_ERR_WSA ( "WSAAsyncSelect", err );
-            closesocket ( s );
-            DestroyWindow ( hWnd );
-            return 0;
-        }
-        /// Socket connection to host
-        SOCKADDR_IN sa = {
-            .sin_family = AF_INET,
-            .sin_port = htons ( nwd->port ),
-            .sin_addr.s_addr = *( ( UINT32* ) ( host->h_addr ) )
-        };
-        #ifdef DEF_FUNC_WSA
-        if( WSAConnect ( s, (LPSOCKADDR)(&sa), sizeof(sa), NULL, NULL, NULL, NULL ) == SOCKET_ERROR )
-        #else
-        if( connect ( s, (LPSOCKADDR)(&sa), sizeof(sa) ) == SOCKET_ERROR )
-        #endif
-        {
-            err = WSAGetLastError();
-            if ( err != WSAEWOULDBLOCK ) {
-                A7LOGERR_WSA ( "WSAConnect", err );
-                A7LOGNET_ERR_WSA ( "WSAConnect", err );
-                closesocket( s );
-                DestroyWindow( hWnd );
-                return 0;
-            } else {
-                A7LOGWARN_WSA ( "NonBlock WSAConnect", err );
-                A7LOGNET_WARN_WSA ( "NonBlock WSAConnect", err );
-            }
-        }
-    }
-    return 0;
-}
-static LRESULT A7NetWndPSelectConnect ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
-    assert ( nwd->state == A7NWDS_CREATED );
-    nwd->state = A7NWDS_CONNECTED;
-    A7LOGINFO ( "socket connected SOCKET(%p)", (void*)s );
-    A7LOGNET_INFO ( "socket connected SOCKET(%p)", (void*)s );
-    if ( nwd->ssl != NULL ) {
-        nwd->ssl = SSL_new ( g_A7NetCtx );
-        if ( nwd->ssl == NULL ) {
-            A7LOGERRCS ( "SSL_new", 0, "NULL" );
-            A7LOGNET_ERRCS ( "SSL_new", 0, "NULL" );
-            A7NetErrSslStack();
-            shutdown ( s, SD_SEND );
-            return 0;
-        }
-        int err = BIO_new_bio_pair ( &nwd->app, 0, &nwd->net, 0);
-        if ( err != 1 ) {
-            A7LOGERRCS ( "BIO_new_bio_pair", err, "NULL" );
-            A7LOGNET_ERRCS ( "BIO_new_bio_pair", err, "NULL" );
-            A7NetErrSslStack();
-            shutdown ( s, SD_SEND );
-            return 0;
-        }
-        SSL_set_bio ( nwd->ssl, nwd->app, nwd->app );
-
-        nwd->state = A7NWDS_TLS_CREATED;
-        A7LOGINFO ( "TLS created SOCKET(%p) SSL(%p)", (void*)s, nwd->ssl );
-        A7LOGNET_INFO ( "TLS created SOCKET(%p) SSL(%p)", (void*)s, nwd->ssl );
-    }
-
-    return 0;
-}
-static LRESULT A7NetWndPSelectClose ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
-    nwd->state = A7NWDS_NULL;
-    A7LOGINFO ( "socket closed SOCKET(%p)", (void*)s );
-    A7LOGNET_INFO ( "socket closed SOCKET(%p)", (void*)s );
-    closesocket ( s );
-    DestroyWindow ( hWnd );
-    return 0;
-}
-
-static void A7NetWndPSelect_ssl2net ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
-    char d[4096];
-    int l;
-    while ( ( l = BIO_read( nwd->net, d, 4096 ) ) > 0 ) {
-        int k = 0;
-        int r = l;
-        while ( ( k < r ) && ( ( l = send ( s, d + k, r - k, 0 ) ) != SOCKET_ERROR  ) ) k += l;
-
-        A7LOGINFO ( "ssl2net %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
-        A7LOGNET_INFO ( "ssl2net %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
-
-        if ( l == SOCKET_ERROR ) {
-            int err = WSAGetLastError();
-            A7LOGERR_WSA ( "send", err );
-            A7LOGNET_ERR_WSA ( "send", err );
-            assert ( 0 /* TODO: we can leak bytes with this trouble... */ );
-        }
-    }
-}
-static void A7NetWndPSelect_net2ssl ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
-    char d[4096];
-    int l;
-    while ( ( l = recv ( s, d, 4096, 0 ) ) != SOCKET_ERROR ) {
-        if( l <= 0 ) {
-            int err = WSAGetLastError();
-            A7LOGERR_WSA ( "recv", err );
-            A7LOGNET_ERR_WSA ( "recv", err );
-            break;
-        }
-        int k = 0;
-        int r = l;
-        while ( ( k < r ) && ( ( l = BIO_write ( nwd->net, d + k, r - k ) ) > 0 ) ) k += l;
-
-        A7LOGINFO ( "net2ssl %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
-        A7LOGNET_INFO ( "net2ssl %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
-    }
-    if ( l == SOCKET_ERROR ) {
-        int err = WSAGetLastError();
-        if ( err == WSAEWOULDBLOCK ) {
-            A7LOGWARN_WSA ( "recv", err );
-            A7LOGNET_WARN_WSA ( "recv", err );
-        } else {
-            A7LOGERR_WSA ( "recv", err );
-            A7LOGNET_ERR_WSA ( "recv", err );
-        }
-    }
-}
-
-static void A7NetWndPSelect_net2ssl2file ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
-    char d[4096];
-    int l;
-    while ( ( l = recv ( s, d, 4096, 0 ) ) != SOCKET_ERROR ) {
-        if( l <= 0 ) {
-            int err = WSAGetLastError();
-            A7LOGERR_WSA ( "recv", err );
-            A7LOGNET_ERR_WSA ( "recv", err );
-            break;
-        }
-        if ( nwd->ssl != NULL ) {
-            int k = 0;
-            int r = l;
-            while ( ( k < r ) && ( ( l = BIO_write ( nwd->net, d + k, r - k ) ) > 0 ) ) k += l;
-
-            A7LOGINFO ( "net2ssl %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
-            A7LOGNET_INFO ( "net2ssl %d >>> %d SOCKET(%p) SSL(%p)", r, k, (void*)s, nwd->ssl );
-            while ( ( l = SSL_read ( nwd->ssl, d, 4096 ) ) > 0 ) {
-                fwrite ( d, 1, l, nwd->foo );
-                fflush ( nwd->foo );
-            }
-            if ( l <= 0 ) {
-                int err = SSL_get_error ( nwd->ssl, l );
-                A7LOGERRCS ( "SSL_read", err, A7Err_SSL_get_error ( err ) );
-                A7LOGNET_ERRCS ( "SSL_read", err, A7Err_SSL_get_error ( err ) );
-                A7NetErrSslStack();
-            }
-        } else {
-            fwrite ( d, 1, l, nwd->foo );
-            fflush ( nwd->foo );
-        }
-    }
-    if ( l == SOCKET_ERROR ) {
-        int err = WSAGetLastError();
-        if ( err == WSAEWOULDBLOCK ) {
-            A7LOGWARN_WSA ( "recv", err );
-            A7LOGNET_WARN_WSA ( "recv", err );
-        } else {
-            A7LOGERR_WSA ( "recv", err );
-            A7LOGNET_ERR_WSA ( "recv", err );
-        }
-    }
-}
-
-static void A7NetWndPSelect_trySslConnect ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
-    int err = SSL_connect ( nwd->ssl );
-    if ( err == 1 ) {
-        nwd->state = A7NWDS_TLS_CONNECT;
-        A7LOGINFO ( "tls connected SOCKET(%p) SSL(%p)", (void*)s, nwd->ssl );
-        A7LOGNET_INFO ( "tls connected SOCKET(%p) SSL(%p)", (void*)s, nwd->ssl );
-        const char * c = SSL_get_cipher ( nwd->ssl );
-        A7LOGINFO ( "SOCKET(%p) SSL(%p) CIPHER = %s", (void*)s, nwd->ssl, c );
-        A7LOGNET_INFO ( "SOCKET(%p) SSL(%p) CIPHER = %s", (void*)s, nwd->ssl, c );
-
-        return;
-    }
-    if ( err == 0 )  {
-        shutdown ( s, SD_SEND );
-    }
-    err = SSL_get_error ( nwd->ssl, err );
-    A7LOGERRCS ( "SSL_connect", err, A7Err_SSL_get_error ( err ) );
-    A7LOGNET_ERRCS ( "SSL_connect", err, A7Err_SSL_get_error ( err ) );
-    A7NetErrSslStack();
-}
-
-static LRESULT A7NetWndPSelectRead ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
-    if ( nwd->state == A7NWDS_TLS_CREATED ) {
-        A7NetWndPSelect_net2ssl ( hWnd, nwd, s );
-        A7NetWndPSelect_trySslConnect ( hWnd, nwd, s );
-        A7NetWndPSelect_ssl2net ( hWnd, nwd, s );
-    }
-    if ( nwd->state == A7NWDS_TLS_CONNECT ) {
-        char buf[512];
-        int sz = snprintf ( buf, 511, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", nwd->hostname );
-        int k = 0;
-        int l;
-        while ( ( k < sz ) && ( l = SSL_write ( nwd->ssl, buf+k, sz-k ) ) > 0 )
-            k += l;
-        A7NetWndPSelect_ssl2net ( hWnd, nwd, s );
-        // shutdown ( s, SD_SEND );
-        nwd->state = A7NWDS_TLS_READY;
-    }
-    if ( nwd->state == A7NWDS_TLS_READY ) {
-        A7NetWndPSelect_net2ssl2file ( hWnd, nwd, s );
-    }
-    if ( nwd->state == A7NWDS_READY ) {
-        A7NetWndPSelect_net2ssl2file ( hWnd, nwd, s );
-    }
-
-    return 0;
-}
-static LRESULT A7NetWndPSelectWrite ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s ) {
-    if ( nwd->state == A7NWDS_CONNECTED ) {
-        char buf[512];
-        int sz = snprintf ( buf, 511, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", nwd->hostname );
-        int k = 0;
-        int l;
-        while ( ( k < sz ) && ( l = send ( s, buf+k, sz-k, 0 ) ) > 0 )
-            k += l;
-
-        if ( l == SOCKET_ERROR ) {
-            int err = WSAGetLastError();
-            A7LOGERR_WSA ( "send", err );
-            A7LOGNET_ERR_WSA ( "send", err );
-            assert ( 0 /* TODO: we can leak bytes with this trouble... */ );
-        }
-
-        nwd->state = A7NWDS_READY;
-    }
-
-
-    if ( nwd->state == A7NWDS_TLS_CREATED ) {
-        A7NetWndPSelect_trySslConnect ( hWnd, nwd, s );
-        A7NetWndPSelect_ssl2net ( hWnd, nwd, s );
-    }
-    // if ( nwd->state == A7NWDS_TLS_CONNECT ) {
-    //     char buf[512];
-    //     int sz = snprintf ( buf, 511, "GET %s HTTP/1.1\r\nHost: %s\r\n\r\n",
-    //         "/", nwd->hostname );
-    //     SSL_write ( nwd->ssl, buf, sz );
-    //     A7NetWndPSelect_ssl2net ( hWnd, nwd, s );
-    // }
-    return 0;
-}
-
-static LRESULT A7NetWndPSelect ( HWND hWnd, S7NETWNDDATA *nwd, SOCKET s, int err, int event ) {
-    assert ( nwd != NULL );
-
-    if( err != 0 ) {
-        A7LOGERR_WSA ( "WSAAsyncSelect IN EVENT", err );
-        A7LOGNET_ERR_WSA ( "WSAAsyncSelect IN EVENT", err );
-        closesocket( s );
-        DestroyWindow( hWnd );
-        return 0;
-    }
-
-    if( s == INVALID_SOCKET ) {
-        A7LOGERR_WSA ( "INVALID_SOCKET WSAAsyncSelect IN EVENT", 0 );
-        A7LOGNET_ERR_WSA ( "INVALID_SOCKET WSAAsyncSelect IN EVENT", 0 );
-        DestroyWindow( hWnd );
-        return 0;
-    }
-
-    switch ( event ) {
-        #ifdef FD_READ
-        case FD_READ:
-            A7LOGINFO ( "SOCKET(%p) FD_READ", (void*)s );
-            A7LOGNET_INFO ( "SOCKET(%p) FD_READ", (void*)s );
-            return A7NetWndPSelectRead ( hWnd, nwd, s );
-        #endif
-        #ifdef FD_WRITE
-        case FD_WRITE:
-            A7LOGINFO ( "SOCKET(%p) FD_WRITE", (void*)s );
-            A7LOGNET_INFO ( "SOCKET(%p) FD_WRITE", (void*)s );
-            return A7NetWndPSelectWrite ( hWnd, nwd, s );
-        #endif
-        #ifdef FD_OOB
-        case FD_OOB:
-            A7LOGINFO ( "SOCKET(%p) FD_OOB", (void*)s );
-            A7LOGNET_INFO ( "SOCKET(%p) FD_OOB", (void*)s );
-            break;
-        #endif
-        #ifdef FD_ACCEPT
-        case FD_ACCEPT:
-            A7LOGINFO ( "SOCKET(%p) FD_ACCEPT", (void*)s );
-            A7LOGNET_INFO ( "SOCKET(%p) FD_ACCEPT", (void*)s );
-            break;
-        #endif
-        #ifdef FD_CONNECT
-        case FD_CONNECT:
-            A7LOGINFO ( "SOCKET(%p) FD_CONNECT", (void*)s );
-            A7LOGNET_INFO ( "SOCKET(%p) FD_CONNECT", (void*)s );
-            return A7NetWndPSelectConnect ( hWnd, nwd, s );
-        #endif
-        #ifdef FD_CLOSE
-        case FD_CLOSE:
-            A7LOGINFO ( "SOCKET(%p) FD_CLOSE", (void*)s );
-            A7LOGNET_INFO ( "SOCKET(%p) FD_CLOSE", (void*)s );
-            return A7NetWndPSelectClose ( hWnd, nwd, s );
-        #endif
-        #ifdef FD_QOS
-        case FD_QOS:
-            A7LOGINFO ( "SOCKET(%p) FD_QOS", (void*)s );
-            A7LOGNET_INFO ( "SOCKET(%p) FD_QOS", (void*)s );
-            break;
-        #endif
-        #ifdef FD_GROUP_QOS
-        case FD_GROUP_QOS:
-            A7LOGINFO ( "SOCKET(%p) FD_GROUP_QOS", (void*)s );
-            A7LOGNET_INFO ( "SOCKET(%p) FD_GROUP_QOS", (void*)s );
-            break;
-        #endif
-        #ifdef FD_ROUTING_INTERFACE_CHANGE
-        case FD_ROUTING_INTERFACE_CHANGE:
-            A7LOGINFO ( "SOCKET(%p) FD_ROUTING_INTERFACE_CHANGE", (void*)s );
-            A7LOGNET_INFO ( "SOCKET(%p) FD_ROUTING_INTERFACE_CHANGE", (void*)s );
-            break;
-        #endif
-        #ifdef FD_ADDRESS_LIST_CHANGE
-        case FD_ADDRESS_LIST_CHANGE:
-            A7LOGINFO ( "SOCKET(%p) FD_ADDRESS_LIST_CHANGE", (void*)s );
-            A7LOGNET_INFO ( "SOCKET(%p) FD_ADDRESS_LIST_CHANGE", (void*)s );
-            break;
-        #endif
-    }
-    return 0;
-}
-
+/* Функция обработчик сообщений окна */
 static LRESULT CALLBACK A7NetWndProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) {
     switch ( uMsg ) {
         case WM_CREATE:
-            assert( ( ( CREATESTRUCT* ) lParam ) != NULL );
-            assert( ( ( CREATESTRUCT* ) lParam ) ->lpCreateParams != NULL );
-            return A7NetWndPCreate( hWnd, ( S7NETWNDCREATE* )( ( ( CREATESTRUCT* ) lParam )->lpCreateParams ) );
-        case WM_DESTROY: return A7NetWndPDestroy( hWnd, ( S7NETWNDDATA* ) GetWindowLongPtr ( hWnd, GWLP_USERDATA ) );
-        case WM_WSA_GETHOSTBYNAME: return A7NetWndPGetHostByName( hWnd, ( S7NETWNDDATA* ) GetWindowLongPtr ( hWnd, GWLP_USERDATA ), ( HANDLE ) wParam, WSAWM_ERROR ( lParam ), WSAWM_BUFLEN ( lParam ) );
-        case WM_WSA_SELECT: return A7NetWndPSelect( hWnd, ( S7NETWNDDATA* ) GetWindowLongPtr ( hWnd, GWLP_USERDATA ), ( SOCKET ) wParam, WSAWM_ERROR ( lParam ), WSAWM_EVENT ( lParam ) );
+            return A7NetOnCreate ( hWnd, ( S7WDA7NETCRT* ) ( ( ( CREATESTRUCT* ) lParam ) ->lpCreateParams ) );
+        case WM_DESTROY: {
+            return A7NetOnDestroy ( hWnd, A7NetGetWndData ( hWnd ) );
+        }
+
+        case WM_WSA_SELECT: {
+            int err = GET_WM_WSA_ERROR ( lParam );
+            int etp = GET_WM_WSA_EVENT ( lParam );
+            S7WDA7NET *p = A7NetGetWndData ( hWnd );
+            S7WDA7NETCB *cb = p->pCBS;
+            A7NetLog_WSAAsyncSelect_WM ( p, err, etp );
+            if ( err != 0 ) {
+                if ( cb -> OnError ( p, etp, err ) ) {
+                    DestroyWindow( hWnd );
+                }
+            } else {
+                switch ( etp ) {
+                    case FD_CONNECT:
+                        if ( cb -> OnConnect ( p ) ) {
+                            closesocket ( p -> iSock );
+                        }
+                        break;
+                    case FD_CLOSE:
+                        if ( cb -> OnClose ( p ) ) {
+                            DestroyWindow( hWnd );
+                        }
+                        break;
+                    case FD_WRITE:
+                        if ( cb -> OnWrite ( p ) ) {
+                            closesocket ( p -> iSock );
+                        }
+                        break;
+                    case FD_READ:
+                        if ( cb -> OnRead ( p ) ) {
+                            closesocket ( p -> iSock );
+                        }
+                        break;
+                }
+            }
+            return 0;
+        }
     }
     return DefWindowProc( hWnd, uMsg, wParam, lParam );
 }
 
-int A7NetInit ( HINSTANCE hInstance ) {
+int     A7NetInit           ( HINSTANCE hInstance ) {
     g_A7NetInstance = hInstance;
 
     WNDCLASSEXW wcex;
-    wcex.cbSize         = sizeof(WNDCLASSEX);
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
+    wcex.cbSize         = sizeof ( WNDCLASSEX );
+    wcex.style          = 0;
     wcex.lpfnWndProc    = A7NetWndProc;
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = g_A7NetInstance;
-    wcex.hIcon          = LoadIcon ( NULL, IDI_APPLICATION );
-    wcex.hCursor        = LoadCursor ( NULL, IDC_ARROW );
-    wcex.hbrBackground  = (HBRUSH) GetStockObject ( WHITE_BRUSH );
+    wcex.hIcon          = NULL;
+    wcex.hCursor        = NULL;
+    wcex.hbrBackground  = NULL;
     wcex.lpszMenuName   = NULL;
     wcex.lpszClassName  = TEXT ( _A7NET_WND_CLASS_NAME );
     wcex.hIconSm        = NULL;
     if ( RegisterClassEx ( &wcex ) == 0 ) {
-        g_A7NetErr = GetLastError();
-        A7LOGERRC ( "RegisterClassEx", g_A7NetErr );
-        g_A7NetErr = -1;
+        // TODO:FATAL
         return (-1);
     }
     ;
-    if ( ( g_A7NetErr = WSAStartup ( WINSOCK_VERSION, &g_WSAData ) ) != 0 ) {
-        A7LOGERR_WSA ( "WSAStartup", g_A7NetErr );
-        g_A7NetErr = 1;
+    if ( ( WSAStartup ( WINSOCK_VERSION, &g_A7NetWsaData ) ) != 0 ) {
+        // TODO:FATAL
         return (-1);
     }
 
     SSL_load_error_strings();
-    if ( ( g_A7NetErr = SSL_library_init() ) != 1 ) {
-        A7LOGWARNC ( "SSL_library_init", g_A7NetErr );
-        A7NetErrSslStack();
+    if ( ( SSL_library_init() ) != 1 ) {
+        // TODO:ERROR
     }
 
     SSL_METHOD const * method = TLSv1_2_client_method();
     if ( method == NULL ) {
-        A7LOGWARNCS ( "TLSv1_2_client_method", 0, "NULL" );
+        // TODO:WARN
         method = TLSv1_1_client_method();
         if ( method == NULL ) {
-            A7LOGWARNCS ( "TLSv1_1_client_method", 0, "NULL" );
+            // TODO:WARN
             method = TLSv1_client_method();
             if ( method == NULL ) {
-                A7LOGWARNCS ( "TLSv1_client_method", 0, "NULL" );
+                // TODO:WARN
                 method = SSLv23_client_method();
                 if ( method == NULL ) {
-                    A7LOGWARNCS ( "SSLv23_client_method", 0, "NULL" );
+                    // TODO:WARN
                 }
             }
         }
     }
     if ( method == NULL ) {
-        A7LOGERRCS ( "can't get SSL_METHOD", 0, "NULL" );
-        g_A7NetErr = 1;
-        return (-1);
+        // TODO:ERROR
     } else {
         g_A7NetCtx = SSL_CTX_new ( method );
         if ( g_A7NetCtx == NULL ) {
-            A7LOGERRCS ( "SSL_CTX_new", 0, "NULL" );
-            A7NetErrSslStack();
-            g_A7NetErr = 1;
-            return (-1);
+            // TODO:ERROR
         }
     }
-    g_A7NetErr = 0;
     return (0);
 }
 
-void A7NetRelease ( void ) {
-    int err = g_A7NetErr;
+void    A7NetRelease        ( void ) {
     if( g_A7NetCtx != NULL ) {
-        SSL_CTX_free( g_A7NetCtx );
-        A7NetErrSslStack();
+        SSL_CTX_free ( g_A7NetCtx );
     }
-    switch ( err ) {
+    if ( WSACleanup() == SOCKET_ERROR ) {
+        // TODO:ERROR
+    }
+}
 
-        case 1:
-            if ( WSACleanup() == SOCKET_ERROR ) {
-                g_A7NetErr = WSAGetLastError();
-                A7LOGERR_WSA ( "WSACleanup", g_A7NetErr );
+HWND    A7NetNewConnect     ( S7WDA7NETCRT *pCRT ) {
+    return ( pCRT == NULL ) ? NULL : CreateWindowEx ( 0, TEXT ( _A7NET_WND_CLASS_NAME ), NULL, 0, CW_USEDEFAULT, CW_USEDEFAULT,CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, g_A7NetInstance, pCRT );
+}
+
+
+S7WDA7NET * A7NetGetWndData ( HWND hWnd ) {
+    return ( S7WDA7NET* ) GetWindowLongPtr ( hWnd, GWLP_USERDATA );
+}
+
+HWND    A7NetNewConnect4    ( BYTE *pIp, UINT16 nPort, BOOL bTls,
+    S7WDA7NETCB *pCBS ) {
+    S7WDA7NETCRT crt = {
+        // .aIp    = {
+        //         0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+        //         0x00,0x00,0xff,0xff,
+        //         pIp[0],pIp[1],pIp[2],pIp[3] },
+        .nPort  = nPort,
+        .bTls   = bTls,
+        .pCBS   = pCBS,
+        .bForceV6   = FALSE,
+    };
+    memset ( crt.aIp, 0, 10 );
+    crt.aIp[012] = 0xff;
+    crt.aIp[013] = 0xff;
+    memcpy ( crt.aIp+014, pIp, 4 );
+    return A7NetNewConnect ( &crt );
+}
+
+HWND    A7NetNewConnect6    ( UINT16 *pIp, UINT16 nPort, BOOL bTls,
+    S7WDA7NETCB *pCBS ) {
+    S7WDA7NETCRT crt = {
+        // .aIp    = {
+        //         pIp[000],pIp[001],pIp[002],pIp[003],
+        //         pIp[004],pIp[005],pIp[006],pIp[007],
+        //         pIp[010],pIp[011],pIp[012],pIp[013],
+        //         pIp[014],pIp[015],pIp[016],pIp[017] },
+        .nPort  = nPort,
+        .bTls   = bTls,
+        .pCBS   = pCBS,
+        .bForceV6   = TRUE,
+    };
+
+    memcpy ( crt.aIp, pIp, 16 );
+
+    UINT16 *pIp1 = ( UINT16* ) ( crt.aIp );
+    pIp1[0] = htons ( pIp[0] );
+    pIp1[1] = htons ( pIp[1] );
+    pIp1[2] = htons ( pIp[2] );
+    pIp1[3] = htons ( pIp[3] );
+    pIp1[4] = htons ( pIp[4] );
+    pIp1[5] = htons ( pIp[5] );
+    pIp1[6] = htons ( pIp[6] );
+    pIp1[7] = htons ( pIp[7] );
+    return A7NetNewConnect ( &crt );
+}
+
+/*  Callback вызывемый в случае успешной установки подключения */
+BOOL CALLBACK A7CbDnsOnConnect ( S7WDA7NET *p ) {
+    A7Log ( "%p CONNECT\n", p -> hWnd );
+    return FALSE;
+}
+/*  Callback вызывемый в случае закрытия соединения */
+BOOL CALLBACK A7CbDnsOnClose ( S7WDA7NET *p ) {
+    A7Log ( "%p CLOSE\n", p -> hWnd );
+    return TRUE;
+}
+/*  Callback вызывемый в случае пояления места для записи */
+BOOL CALLBACK A7CbDnsOnWrite ( S7WDA7NET *p ) {
+    A7Log ( "%p WRITE\n", p -> hWnd );
+    return FALSE;
+}
+/*  Callback вызывемый в случае пояления данных для чтения */
+BOOL CALLBACK A7CbDnsOnRead ( S7WDA7NET *p ) {
+    A7Log ( "%p READ\n", p -> hWnd );
+    return FALSE;
+}
+/*  Callback вызывемый в случае ошибки */
+BOOL CALLBACK A7CbDnsOnError ( S7WDA7NET *p, int etp, int err ) {
+    switch ( etp ) {
+        case FD_CONNECT:
+            switch ( err ) {
+                case WSAEAFNOSUPPORT:
+                    A7Log ( "%p ERROR %s\n", p -> hWnd, "Addresses in the specified family cannot be used with this socket." );
+                    break;
+                case WSAECONNREFUSED:
+                    A7Log ( "%p ERROR %s\n", p -> hWnd, "The attempt to connect was rejected." );
+                    break;
+                case WSAENETUNREACH:
+                    A7Log ( "%p ERROR %s\n", p -> hWnd, "The network cannot be reached from this host at this time." );
+                    break;
+                case WSAEFAULT:
+                    A7Log ( "%p ERROR %s\n", p -> hWnd, "The namelen parameter is invalid." );
+                    break;
+                case WSAEINVAL:
+                    A7Log ( "%p ERROR %s\n", p -> hWnd, "The socket is already bound to an address." );
+                    break;
+                case WSAEISCONN:
+                    A7Log ( "%p ERROR %s\n", p -> hWnd, "The socket is already connected." );
+                    break;
+                case WSAEMFILE:
+                    A7Log ( "%p ERROR %s\n", p -> hWnd, "No more file descriptors are available." );
+                    break;
+                case WSAENOBUFS:
+                    A7Log ( "%p ERROR %s\n", p -> hWnd, "No buffer space is available. The socket cannot be connected." );
+                    break;
+                case WSAENOTCONN:
+                    A7Log ( "%p ERROR %s\n", p -> hWnd, "The socket is not connected." );
+                    break;
+                case WSAETIMEDOUT:
+                    A7Log ( "%p ERROR %s\n", p -> hWnd, "Attempt to connect timed out without establishing a connection." );
+                    break;
             }
-        case -1:
-        break;
+            break;
     }
+    A7Log ( "%p ERROR\n", p -> hWnd );
+
+    return TRUE;
+}
+
+static S7WDA7NETCB g_A7NetCbDns = {
+        .OnConnect  = A7CbDnsOnConnect,
+        .OnClose    = A7CbDnsOnClose,
+        .OnWrite    = A7CbDnsOnWrite,
+        .OnRead     = A7CbDnsOnRead,
+        .OnError    = A7CbDnsOnError,
+    };
+
+HWND    A7NetNewConnectDns4 ( BYTE *pIp ) {
+    return A7NetNewConnect4 ( pIp, _A7PORT_DNS, FALSE, &g_A7NetCbDns );
+}
+
+/*  Подключение к DNS серверу по TCP/IPv6
+    @pIp        > IPv4 сервера (16байт)
+    @<          >   HWND окна, который обрабатывает подключения
+                    NULL в случае ошибки
+*/
+HWND    A7NetNewConnectDns6 ( UINT16 *pIp ) {
+    return A7NetNewConnect6 ( pIp, _A7PORT_DNS, FALSE, &g_A7NetCbDns );
 }

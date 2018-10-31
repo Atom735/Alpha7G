@@ -1,4 +1,8 @@
 *.exe
 *.dll
 *.log
+*.a7-log
 *.o
+*.sublime-workspace
+
++
