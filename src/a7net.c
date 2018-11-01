@@ -284,7 +284,6 @@ int     A7NetInit           ( HINSTANCE hInstance ) {
         // TODO:FATAL
         return (-1);
     }
-    ;
     if ( ( WSAStartup ( WINSOCK_VERSION, &g_A7NetWsaData ) ) != 0 ) {
         // TODO:FATAL
         return (-1);
@@ -390,6 +389,26 @@ HWND    A7NetNewConnect6    ( UINT16 *pIp, UINT16 nPort, BOOL bTls,
 /*  Callback вызывемый в случае успешной установки подключения */
 BOOL CALLBACK A7CbDnsOnConnect ( S7WDA7NET *p ) {
     A7Log ( "%p CONNECT\n", p -> hWnd );
+
+    p -> send = 0;
+
+    // UINT16 pb = (UINT16*) p -> buf;
+    // pb[0] = htons ( 0xAAAA ); /* ID */
+    // pb[1] = htons ( 0x0100 ); /* Параметры запроса */
+    // pb[2] = htons ( 0x0001 ); /* Количество вопросов */
+    // pb[3] = htons ( 0x0000 ); /* Количество ответов */
+    // pb[4] = htons ( 0x0000 ); /* Количество записей об уполномоченных серверах */
+    // pb[5] = htons ( 0x0000 ); /* Количество дополнительных записей */
+    // p -> buf [12] = 7;
+    // memcpy ( p -> buf + 13, "example", 7 );
+    // p -> buf [20] = 3;
+    // memcpy ( p -> buf + 21, "com", 3 );
+    // p -> buf [24] = 0;
+    // pb = (UINT16*) ( p -> buf + 25);
+    // pb[0] = htons ( 0x0001 ); /* QType */
+    // pb[1] = htons ( 0x0001 ); /* QClass */
+
+
     return FALSE;
 }
 /*  Callback вызывемый в случае закрытия соединения */

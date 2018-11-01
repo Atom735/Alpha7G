@@ -22,8 +22,8 @@ FILES = a7main.c a7log.c a7err.c a7net.c a7ut.c
 SOURCES = $(addprefix src/, $(FILES))
 OBJECTS = $(addsuffix .o, $(addprefix obj/, $(FILES)))
 
-all : main.exe
-	main.exe
+all : main.exe k.exe
+	k.exe
 
 clean:
 	DEL /S *.dll
@@ -49,6 +49,9 @@ libssl-43.dll : $(SDK_PATH_SSL)x86\\libssl-43.dll
 	COPY $^ $@
 libcrypto-41.dll : $(SDK_PATH_SSL)x86\\libcrypto-41.dll
 	COPY $^ $@
+
+k.exe : src/main.c
+	$(CC) -o $@ -march=pentium4 -Wall -O3 -g $< -lmingw32 -lws2_32
 
 
 

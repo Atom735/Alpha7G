@@ -40,6 +40,9 @@ struct _S7WDA7NET {
     CHAR   *szText; /* Имя окна подключения */
     FILE   *fLog;   /* Файл лога */
     ULONG   nClock; /* Количество тиков при создании окна подключения */
+
+    BYTE    buf[4096];
+    INT     send;
 };
 
 struct _S7WDA7NETCB {
@@ -57,7 +60,6 @@ struct _S7WDA7NETCB {
     /*  Callback вызывемый в случае ошибки */
     BOOL ( CALLBACK *OnError )( S7WDA7NET *p, int etp, int err );
 };
-
 
 /*  Инициализация системы A7NET
     @hInstance  > Instance приложения
@@ -119,5 +121,6 @@ extern HWND     A7NetNewConnectDns4 ( BYTE *pIp );
                     NULL в случае ошибки
 */
 extern HWND     A7NetNewConnectDns6 ( UINT16 *pIp );
+
 
 #endif
