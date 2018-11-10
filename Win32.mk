@@ -3,11 +3,13 @@
 SDK_PATH_SDL = F:\\sdk\\SDL2-2.0.8\\i686-w64-mingw32\\
 SDK_PATH_SSL = F:\\sdk\\libressl-2.5.5-windows\\
 
+
 SDK_PATH_SSL2 = F:\\sdk\\libressl-2.8.2\\
+SDK_PATH_JPEG = F:\\sdk\\jpeg-9c\\
 
-PATH_INCLUDE = $(SDK_PATH_SDL)include $(SDK_PATH_SSL)include
+PATH_INCLUDE = $(SDK_PATH_SDL)include $(SDK_PATH_SSL)include $(SDK_PATH_JPEG)
 
-PATH_LIBS = $(SDK_PATH_SDL)lib $(SDK_PATH_SSL)x86
+PATH_LIBS = $(SDK_PATH_SDL)lib $(SDK_PATH_SSL)x86 $(SDK_PATH_JPEG)
 
 PRE_DEFINES = WIN32_LEAN_AND_MEAN _WIN32_WINNT=_WIN32_WINNT_WIN7
 PRE_LIBS = $(addprefix $(SDK_PATH_SSL)x86\\, libcrypto-41.lib libssl-43.lib )
@@ -16,7 +18,7 @@ CC = gcc.exe
 
 CPPFLAGS = $(addprefix -D, $(PRE_DEFINES)) $(addprefix -I, $(PATH_INCLUDE))
 CFLAGS = -mwindows -municode -march=pentium4 -Wall -O3
-LDFLAGS = $(addprefix -L, $(PATH_LIBS)) -lmingw32 -lws2_32 $(PRE_LIBS)
+LDFLAGS = $(addprefix -L, $(PATH_LIBS)) -ljpeg -lGDI32 -lmingw32 -lws2_32 $(PRE_LIBS)
 
 FILES = a7main.c a7log.c a7err.c a7net.c a7ut.c
 SOURCES = $(addprefix src/, $(FILES))
@@ -36,7 +38,7 @@ clean:
 	DEL /S *.o
 
 test/%.exe : test/%.c
-	$(CC) -o $@ $(CPPFLAGS) -march=pentium4 -Wall -O3 -g $< -lmingw32 -lws2_32 -lGDI32 $(PRE_LIBS)
+	$(CC) -o $@ $(CPPFLAGS) -march=pentium4 -Wall -O3 -g $< $(LDFLAGS)
 
 # libssl-43.dll libtls-15.dll
 main.exe : $(OBJECTS) libcrypto-41.dll libssl-43.dll
