@@ -6,6 +6,9 @@
 #include <StdIO.h>
 #include <String.h>
 
+#include <OpenSSL/SSL.h>
+#include <OpenSSL/ERR.h>
+
 typedef struct _A7DNSHEAD {
     UINT16 id;      /* ID - произвольный */
     UINT16 flags;   /* Параметры запроса */
@@ -67,6 +70,18 @@ int A7DnsPackAddQuestion ( BYTE* buf, const char ** QNames, UINT16 QType, UINT16
     return j;
 }
 
+void log_ssl()
+{
+    int err;
+    while (err = ERR_get_error()) {
+        char *str = ERR_error_string(err, 0);
+        if (!str)
+            return;
+        printf(str);
+        printf("\n");
+        fflush(stdout);
+    }
+}
 
 int main ( int argc, char const *argv[] ) {
     WSADATA wsd;
@@ -75,95 +90,144 @@ int main ( int argc, char const *argv[] ) {
         assert ( 0 );
         return (-1);
     }
+    printf("LINE %d\n", __LINE__ );
 
     SOCKET s = INVALID_SOCKET;
 
-    if ( ( s = socket ( AF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) == INVALID_SOCKET ) {
+    if ( ( s = socket ( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ) == INVALID_SOCKET ) {
         printf( "can't create socket\n" );
         assert ( 0 );
         return (-1);
     }
+    printf("LINE %d\n", __LINE__ );
 
     SOCKADDR_IN sa;
     memset ( &sa, 0, sizeof ( sa ) );
-    sa.sin_family       = AF_INET;
-    sa.sin_port         = htons ( 53 );
-    sa.sin_addr.s_addr  = inet_addr ( "8.8.8.8" );
+    sa.sin_family      = AF_INET;
+    printf("LINE %d\n", __LINE__ );
+    /*
+    vk.com.             83  IN  A   87.240.190.67
+    vk.com.             683 IN  A   87.240.129.71
+    vk.com.             683 IN  A   87.240.180.136
+    vk.com.             683 IN  A   87.240.129.133
+    m.vk.com.           345 IN  A   87.240.129.182
+    m.vk.com.           345 IN  A   87.240.190.68
+    m.vk.com.           345 IN  A   87.240.129.76
+    pp.userapi.com.     261 IN  A   93.186.238.48
+    pp.userapi.com.     261 IN  A   87.240.182.228
+    pp.userapi.com.     261 IN  A   87.240.137.143
+    pp.userapi.com.     261 IN  A   93.186.238.32
+    example.com.    75594   IN  A   93.184.216.34
+    example.com.    85883   IN  AAAA    2606:2800:220:1:248:1893:25c8:1946
+    example.com.    85883   IN  NS  b.iana-servers.net.
+    example.com.    85883   IN  NS  a.iana-servers.net.
+    */
+    sa.sin_addr.s_addr = inet_addr("93.186.238.32"); // vk.com
+    sa.sin_port        = htons(443); // https
 
     if( connect ( s, ( SOCKADDR* )( &sa ), sizeof ( sa ) ) != 0 ) {
         printf( "can't connect\n" );
         assert ( 0 );
         return (-1);
     }
+    printf("LINE %d\n", __LINE__ );
 
-    BYTE buf[4096] = {
-        0xAA, 0xAA, // - ID
-        0x01, 0x00, // – Параметры запроса
-        0x00, 0x01, // – Количество вопросов
-        0x00, 0x00, // – Количество ответов
-        0x00, 0x00, // – Количество записей об уполномоченных серверах
-        0x00, 0x00, // – Количество дополнительных записей
-        // 12 байт
-        0x07, 0x65, // – у 'example' длина 7, e
-        0x78, 0x61, // – x, a
-        0x6D, 0x70, // – m, p
-        0x6C, 0x65, // – l, e
-        0x03, 0x63, // – у 'com' длина 3, c
-        0x6F, 0x6D, // – o, m
-        0x00,       // - нулевой байт для окончания поля QNAME
-        0x00, 0x01, // – QTYPE
-        0x00, 0x01, // – QCLASS
-        // 12 + 17 = 29 байт
-    };
-    int i = 0;
-    A7DNSHEAD head = {
-        .id      = 1,
-        .flags   = _A7DNSHEADFLAG_RD,
-        .QDCount = 1,
-        .ANCount = 0,
-        .NSCount = 0,
-        .ARCount = 0,
-    };
 
-    A7DnsPackPrintHead ( &head );
-    i += A7DnsPackAddHead ( buf+i, &head );
-    const char *strs[] = { "example", "com", NULL };
-    i += A7DnsPackAddQuestion ( buf+i, strs, 1, 1 );
-
-    int l = 0;
-
-    if ( ( l = send ( s, buf, i, 0 ) ) == SOCKET_ERROR ) {
-        printf( "can't send\n" );
-        assert ( 0 );
-        return (-1);
+    SSL_library_init();
+    SSL_load_error_strings();
+    const SSL_METHOD *meth = TLSv1_2_client_method();
+    SSL_CTX *ctx = SSL_CTX_new (meth);
+    SSL *ssl = SSL_new (ctx);
+    if (!ssl) {
+        printf("Error creating SSL.\n");
+        log_ssl();
+        return -1;
     }
-    printf( "sended %d/%d bytes\n", l, 29 );
+    printf("LINE %d\n", __LINE__ );
 
-   if ( ( l = recv ( s, buf, 1024, 0 ) ) == SOCKET_ERROR ) {
-        printf( "can't recv\n" );
-        assert ( 0 );
-        return (-1);
-    }
-    printf( "recived %d bytes\n", l );
+    SSL_set_fd ( ssl, s );
+    printf("LINE %d\n", __LINE__ );
+    SSL_connect( ssl );
+    printf("LINE %d\n", __LINE__ );
+    #define SIZEDD (4096)
+    CHAR buf[SIZEDD] =
+        "GET /c847016/v847016261/1222d3/03LAUefk5Ec.jpg HTTP/1.1\r\n"
+        "Host: pp.userapi.com\r\n"
+        "\r\n";
+    INT Szs = strlen(buf);
+    printf("len %d\n", Szs );
 
-    if ( l >= sizeof ( A7DNSHEAD ) ) {
-        A7DnsPackTranslateHead ( &head, (A7DNSHEAD*) buf );
-        i = sizeof ( A7DNSHEAD );
-        A7DnsPackPrintHead ( &head );
+
+
+    SSL_write( ssl, buf, Szs );
+    int sz = SSL_read ( ssl, buf, SIZEDD );
+    int SZ = 0;
+
+    printf("Readed: %d\n", sz );
+
+    FILE* pf = fopen( "txt.txt", "w" );
+    FILE* kf = fopen( "jpg.txt", "w" );
+    FILE* jf = fopen( "jpg.jpg", "w" );
+    fwrite( buf, 1, sz, pf );
+
+    for( int i=0; i<sz; ++i ) {
+        if(memcmp ( buf+i,"Content-Length:", 15 ) == 0) {
+            SZ = 0;
+            i+=15;
+            while(buf[i]==' ') ++i;
+            while((buf[i]>='0')&&(buf[i]<='9')) {
+                SZ *= 10;
+                SZ += buf[i]-'0';
+                ++i;
+            }
+
+            printf("Content-Length: %d\n", SZ );
+        }
+        if(memcmp ( buf+i,"\r\n\r\n", 4 ) == 0) {
+            i+=4;
+            fwrite( buf+i, 1, sz-i, jf );
+            fwrite( buf+i, 1, sz-i, kf );
+            SZ-=sz-i;
+
+            printf("Header: %d\n", i );
+            printf("File: %d/%d\n", sz-i, SZ );
+        }
+    }
+    while(SZ>0) {
+        sz = SSL_read ( ssl, buf, SIZEDD );
+        printf("Readed: %d/%d\n", sz, SZ );
+        fwrite( buf, 1, sz, jf );
+        fwrite( buf, 1, sz, kf );
+        // fwrite( buf, 1, sz, pf );
+        SZ-=sz;
     }
 
-    for ( int i = 0; i < l; ++i ) {
-        if( i % 4 == 0) printf("\n" );
-        printf(" %02x ", buf[i] );
-    }
-    printf("\n" );
+
+    fclose(pf);
+    fclose(kf);
+    fclose(jf);
+
+
+    SSL_shutdown ( ssl );
+    printf("LINE %d\n", __LINE__ );
+
+    SSL_free ( ssl );
+    printf("LINE %d\n", __LINE__ );
+
+
+    SSL_CTX_free ( ctx );
+    printf("LINE %d\n", __LINE__ );
+
+
 
     shutdown ( s, SD_SEND );
     closesocket ( s );
+    printf("LINE %d\n", __LINE__ );
 
 
     if ( WSACleanup() == SOCKET_ERROR ) {
         // TODO:ERROR
     }
+    printf("LINE %d\n", __LINE__ );
     return 0;
 }

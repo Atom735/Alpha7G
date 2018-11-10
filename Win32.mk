@@ -22,8 +22,11 @@ FILES = a7main.c a7log.c a7err.c a7net.c a7ut.c
 SOURCES = $(addprefix src/, $(FILES))
 OBJECTS = $(addsuffix .o, $(addprefix obj/, $(FILES)))
 
-all : main.exe k.exe
-	k.exe
+TESTS = gdi gdi_jpg
+T_TESTS = $(addprefix test/, $(addsuffix .exe, $(TESTS)))
+
+all : main.exe k.exe $(T_TESTS)
+	test/gdi_jpg.exe
 
 clean:
 	DEL /S *.dll
@@ -31,6 +34,9 @@ clean:
 	DEL /S *.log
 	DEL /S *.a7-log
 	DEL /S *.o
+
+test/%.exe : test/%.c
+	$(CC) -o $@ $(CPPFLAGS) -march=pentium4 -Wall -O3 -g $< -lmingw32 -lws2_32 -lGDI32 $(PRE_LIBS)
 
 # libssl-43.dll libtls-15.dll
 main.exe : $(OBJECTS) libcrypto-41.dll libssl-43.dll
@@ -51,7 +57,7 @@ libcrypto-41.dll : $(SDK_PATH_SSL)x86\\libcrypto-41.dll
 	COPY $^ $@
 
 k.exe : src/main.c
-	$(CC) -o $@ -march=pentium4 -Wall -O3 -g $< -lmingw32 -lws2_32
+	$(CC) -o $@ $(CPPFLAGS) -march=pentium4 -Wall -O3 -g $< -lmingw32 -lws2_32 $(PRE_LIBS)
 
 
 
