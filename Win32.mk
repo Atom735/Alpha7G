@@ -2,17 +2,28 @@
 
 SDK_PATH_SDL = F:\\sdk\\SDL2-2.0.8\\i686-w64-mingw32\\
 SDK_PATH_SSL = F:\\sdk\\libressl-2.5.5-windows\\
-
-
-SDK_PATH_SSL2 = F:\\sdk\\libressl-2.8.2\\
+SDK_PATH_FREETYPE = F:\\sdk\\freetype-2.9.1-windows-binaries\\
 SDK_PATH_JPEG = F:\\sdk\\jpeg-9c\\
 
-PATH_INCLUDE = $(SDK_PATH_SDL)include $(SDK_PATH_SSL)include $(SDK_PATH_JPEG)
 
-PATH_LIBS = $(SDK_PATH_SDL)lib $(SDK_PATH_SSL)x86 $(SDK_PATH_JPEG)
+# SDK_PATH_SSL2 = F:\\sdk\\libressl-2.8.2\\
+
+PATH_INCLUDE =\
+	$(SDK_PATH_SDL)include\
+	$(SDK_PATH_SSL)include\
+	$(SDK_PATH_FREETYPE)include\
+	$(SDK_PATH_JPEG)
+
+PATH_LIBS = \
+	$(SDK_PATH_SDL)lib\
+	$(SDK_PATH_SSL)x86\
+	$(SDK_PATH_FREETYPE)win32\
+	$(SDK_PATH_JPEG)
 
 PRE_DEFINES = WIN32_LEAN_AND_MEAN _WIN32_WINNT=_WIN32_WINNT_WIN7
-PRE_LIBS = $(addprefix $(SDK_PATH_SSL)x86\\, libcrypto-41.lib libssl-43.lib )
+PRE_LIBS =\
+	$(addprefix $(SDK_PATH_SSL)x86\\, libcrypto-41.lib libssl-43.lib )\
+	$(addprefix $(SDK_PATH_FREETYPE)win32\\, freetype.lib )
 
 CC = gcc.exe
 
@@ -24,11 +35,16 @@ FILES = a7main.c a7log.c a7err.c a7net.c a7ut.c
 SOURCES = $(addprefix src/, $(FILES))
 OBJECTS = $(addsuffix .o, $(addprefix obj/, $(FILES)))
 
-TESTS = gdi gdi_jpg
+TESTS =\
+	gdi\
+	gdi_jpg\
+	net_tls_getfile\
+	gdi_freetype
+
 T_TESTS = $(addprefix test/, $(addsuffix .exe, $(TESTS)))
 
 all : main.exe k.exe $(T_TESTS)
-	test/gdi_jpg.exe
+	test/gdi_freetype.exe
 
 clean:
 	DEL /S *.dll
@@ -41,7 +57,7 @@ test/%.exe : test/%.c
 	$(CC) -o $@ $(CPPFLAGS) -march=pentium4 -Wall -O3 -g $< $(LDFLAGS)
 
 # libssl-43.dll libtls-15.dll
-main.exe : $(OBJECTS) libcrypto-41.dll libssl-43.dll
+main.exe : $(OBJECTS) libcrypto-41.dll libssl-43.dll freetype.dll
 	$(CC) -o $@ $(CFLAGS) $(OBJECTS) $(LDFLAGS)
 
 obj/%.c.o : src/%.c
@@ -56,6 +72,8 @@ libtls-15.dll : $(SDK_PATH_SSL)x86\\libtls-15.dll
 libssl-43.dll : $(SDK_PATH_SSL)x86\\libssl-43.dll
 	COPY $^ $@
 libcrypto-41.dll : $(SDK_PATH_SSL)x86\\libcrypto-41.dll
+	COPY $^ $@
+freetype.dll : $(SDK_PATH_FREETYPE)win32\\freetype.dll
 	COPY $^ $@
 
 k.exe : src/main.c
