@@ -21,6 +21,9 @@ int main ( int argc, char const *argv[] ) {
     bi.bmiHeader.biHeight = 256;
     bi.bmiHeader.biCompression = BI_RGB;
     bi.bmiHeader.biPlanes = 1;
+
+
+
     BYTE *buf;
     HBITMAP hBackBuffer = CreateDIBSection ( hBackBufferDC, &bi, DIB_RGB_COLORS, (void**)&buf, NULL, 0 );
 

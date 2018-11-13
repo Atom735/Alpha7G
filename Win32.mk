@@ -32,6 +32,8 @@ CFLAGS = -mwindows -municode -march=pentium4 -Wall -O3
 LDFLAGS = $(addprefix -L, $(PATH_LIBS)) -ljpeg -lGDI32 -lmingw32 -lws2_32 $(PRE_LIBS)
 
 FILES = a7main.c a7log.c a7err.c a7net.c a7ut.c
+FILES = a7main.c
+
 SOURCES = $(addprefix src/, $(FILES))
 OBJECTS = $(addsuffix .o, $(addprefix obj/, $(FILES)))
 
@@ -44,7 +46,7 @@ TESTS =\
 T_TESTS = $(addprefix test/, $(addsuffix .exe, $(TESTS)))
 
 all : main.exe k.exe $(T_TESTS)
-	test/gdi_freetype.exe
+	main.exe
 
 clean:
 	DEL /S *.dll
@@ -60,7 +62,7 @@ test/%.exe : test/%.c
 main.exe : $(OBJECTS) libcrypto-41.dll libssl-43.dll freetype.dll
 	$(CC) -o $@ $(CFLAGS) $(OBJECTS) $(LDFLAGS)
 
-obj/%.c.o : src/%.c
+obj/%.c.o : src_new/%.c
 	$(CC) -o $@ -c $(CPPFLAGS) $(CFLAGS) $<
 
 
