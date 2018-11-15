@@ -7,84 +7,42 @@
 #include <StdIO.h>
 #include <String.h>
 #include <WChar.h>
-#include <Math.h>
 
-#include <JpegLib.h>
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
 #include "a7err.c"
-#include "a7bmp.c"
+#include "a7bmp.h"
 
-/* Рисует маску с указаным цветом на цветовую карту */
-VOID A7BmpDrawAlphaMap ( S7BMP *pDst, S7BMP *pSrc, BYTE r, BYTE g, BYTE b, BYTE a, BOOL bMirror ) {
-    BYTE *pbd = ( BYTE* ) pDst -> pData;
-    BYTE *pbs = ( BYTE* ) pSrc -> pData;
-    for ( UINT iy = 0; iy < pSrc -> nHeight; ++iy ) {
-        CONST UINT idy = ( iy + pSrc -> nTop );
-        if ( idy >= pDst -> nHeight ) break;
-        for ( UINT ix = 0; ix < pSrc -> nWidth; ++ix ) {
-            CONST UINT idx = ( ix + pSrc -> nLeft );
-            if ( idx >= pDst -> nWidth ) break;
-            CONST UINT id = idy * pDst -> nStride + idx * 4;
-            CONST UINT is = ( iy ) * pSrc -> nStride + ( bMirror ? pSrc -> nWidth - ix - 1 : ix );
-            pbd [ id + 0 ] = ( pbd [ id + 0 ] * ( 0xff - pbs [ is ] ) + b * pbs [ is ] ) / 0xff;
-            pbd [ id + 1 ] = ( pbd [ id + 1 ] * ( 0xff - pbs [ is ] ) + g * pbs [ is ] ) / 0xff;
-            pbd [ id + 2 ] = ( pbd [ id + 2 ] * ( 0xff - pbs [ is ] ) + r * pbs [ is ] ) / 0xff;
-            pbd [ id + 3 ] = ( pbd [ id + 3 ] * ( 0xff - pbs [ is ] ) + a * pbs [ is ] ) / 0xff;
-        }
-    }
-}
-/* Рисует прямоугольник с указаным цветом на цветовую карту */
-VOID A7BmpDrawRect ( S7BMP *pDst, UINT nX, UINT nY, UINT nW, UINT nH, BYTE r, BYTE g, BYTE b, BYTE a ) {
-    BYTE *pbd = ( BYTE* ) pDst -> pData;
-    for ( UINT iy = 0; iy < nH; ++iy ) {
-        CONST UINT idy = ( iy + nY );
-        if ( idy >= pDst -> nHeight ) break;
-        for ( UINT ix = 0; ix < nW; ++ix ) {
-            CONST UINT idx = ( ix + nX );
-            if ( idx >= pDst -> nWidth ) break;
-            CONST UINT id = idy * pDst -> nStride + idx * 4;
-            pbd [ id + 0 ] = ( pbd [ id + 0 ] * ( 0xff - a ) + b * a ) / 0xff;
-            pbd [ id + 1 ] = ( pbd [ id + 1 ] * ( 0xff - a ) + g * a ) / 0xff;
-            pbd [ id + 2 ] = ( pbd [ id + 2 ] * ( 0xff - a ) + r * a ) / 0xff;
-            pbd [ id + 3 ] = ( pbd [ id + 3 ] * ( 0xff - a ) + a * 0xff ) / 0xff;
-        }
-    }
-}
+#if 0
+S7Bmp *A7BmpCreateTab ( S7Bmp *pTab, FT_Face face, CONST CHAR *pStr ) {
 
-S7BMP *A7BmpCreateTab ( S7BMP *pTab, FT_Face face, CONST CHAR *pStr ) {
-
-    S7BMP *buf = A7BmpCreate ( D7BMP_A7_RGBA, 512, 512, 0 );
+    S7Bmp *buf = A7BmpCreate ( D7BMP_A7_RGBA, 2048, 2048, 0 );
     memset ( buf -> pData, 0, buf -> nHeight * buf -> nStride );
 
-    S7BMP *glyph = NULL;
+    S7Bmp *glyph = NULL;
 
     UINT x = 0;
     pTab -> nTop = 0;
     pTab -> nLeft = 0;
-    A7BmpDrawAlphaMap ( buf, pTab, 0xff, 0x7f, 0x1f, 0xff, FALSE );
+    A7BmpDrawAlphaMap ( buf, pTab, 0x1f, 0x1f, 0x1f, 0xff, FALSE );
     x += pTab -> nWidth * 64;
     CONST UINT h = pTab -> nHeight * 32;
-    UINT x0 = pTab -> nWidth;
-    UINT x1 = 0;
 
     for ( CHAR CONST *ch = pStr; *ch != 0; ++ch ) {
         glyph = A7BmpLoad_Symbol ( glyph, face, *ch, h, x, h+h / 2 );
-        A7BmpDrawRect ( buf, x / 64, 0, glyph -> nAdvance / 64, pTab -> nHeight, 0xff, 0x7f, 0x1f, 0xff );
-        A7BmpDrawAlphaMap ( buf, glyph, 0x1f, 0x7f, 0xff, 0xff, FALSE );
+        A7BmpDrawRect ( buf, x / 64, 0, glyph -> nAdvance / 64, pTab -> nHeight, 0x1f, 0x1f, 0x1f, 0xff );
+        A7BmpDrawAlphaMap ( buf, glyph, 0xef, 0xef, 0xef, 0xff, FALSE );
         x += glyph -> nAdvance;
     }
 
     pTab -> nTop = 0;
     pTab -> nLeft = x / 64;
-    A7BmpDrawAlphaMap ( buf, pTab, 0xff, 0x7f, 0x1f, 0xff, TRUE );
+    A7BmpDrawAlphaMap ( buf, pTab, 0x1f, 0x1f, 0x1f, 0xff, TRUE );
 
     if ( glyph ) A7BmpFree ( glyph );
 
     return buf;
 }
+#endif
 
 
 /* Хендл приложения */
@@ -96,26 +54,31 @@ ATOM            g_iMainClassAtom;
 /* Handle главного окна */
 HWND            g_hWndMain;
 
-S7BMP           *g_bmpWallPapper;
+S7Bmp           *g_bmpWallPapper;
 
-S7BMP           *g_bmpGDI_Layer_BackGround;
-S7BMP           *g_bmpGDI_Layer_Tabs;
+S7Bmp           *g_bmpGDI_Layer_BackGround;
+S7Bmp           *g_bmpGDI_Layer_Tabs;
 
-S7BMP           *g_bmp_Tab;
+S7Bmp           *g_bmp_Tab;
 
-S7BMP           *g_bmpTab;
-
-typedef struct _S7SETTINGS {
-
-} S7SETTINGS;
+// S7Bmp           *g_bmpTab;
 
 
 FT_Library      g_ftLibrary;
 FT_Face         g_ftFace;
 
+UINT            g_nInputSz = 0;
+CHAR            g_szInput[512];
+
 /* Название процедуры главного окна */
 LRESULT CALLBACK A7MainWinProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) {
     switch ( uMsg ) {
+        case WM_CHAR: {
+            g_szInput [ g_nInputSz ] = wParam;
+            ++g_nInputSz;
+            InvalidateRect ( hWnd, NULL, FALSE );
+            break;
+        }
         case WM_KEYDOWN: {
             switch ( wParam ) {
                 case VK_F1:
@@ -130,12 +93,10 @@ LRESULT CALLBACK A7MainWinProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             return 0;
         }
         case WM_CREATE: {
-            g_bmpWallPapper = A7BmpCreateByJpegFileA ( "data/mountain_river_snow_winter_93245_1920x1080.jpg", FALSE );
-            g_bmp_Tab = A7BmpGen_Tab ( 32, 1.0f, 12.0f, 12.0f );
+            g_bmpWallPapper = A7BmpCreateByJpegFileA ( "data/mountain_river_snow_winter_93245_1920x1080.jpg" );
+            g_bmp_Tab = A7BmpGen_Tab ( 32, 1.3f, 12.0f, 12.0f );
             // g_bmp_Tab = A7BmpGen_Symbol ( g_ftFace, '@', 64*73, 64*73, 64*73 );
-
-            g_bmpTab = A7BmpCreateTab ( g_bmp_Tab, g_ftFace, "Hello World!" );
-
+            // g_bmpTab = A7BmpCreateTab ( g_bmp_Tab, g_ftFace, "Hello World!" );
 
             g_bmpGDI_Layer_BackGround = NULL;
             g_bmpGDI_Layer_Tabs = NULL;
@@ -144,13 +105,13 @@ LRESULT CALLBACK A7MainWinProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
         case WM_SIZE: {
             HDC hDC = GetDC ( hWnd );
             if ( g_bmpGDI_Layer_BackGround != NULL ) A7BmpFree ( g_bmpGDI_Layer_BackGround );
-            g_bmpGDI_Layer_BackGround = A7BmpCreateByGDI ( hDC, LOWORD ( lParam ), HIWORD ( lParam ), FALSE, FALSE );
-            A7BmpCopy ( g_bmpGDI_Layer_BackGround, 0, 0, g_bmpWallPapper, 0, 0, __min ( g_bmpGDI_Layer_BackGround -> nWidth, g_bmpWallPapper -> nWidth ), __min ( g_bmpGDI_Layer_BackGround -> nHeight, g_bmpWallPapper -> nHeight ) );
+            g_bmpGDI_Layer_BackGround = A7BmpCreateByGDI ( hDC, LOWORD ( lParam ), HIWORD ( lParam ), FALSE );
+            A7BmpCopyFull ( g_bmpGDI_Layer_BackGround, 0, 0, g_bmpWallPapper );
+
 
             if ( g_bmpGDI_Layer_Tabs != NULL ) A7BmpFree ( g_bmpGDI_Layer_Tabs );
-            g_bmpGDI_Layer_Tabs = A7BmpCreateByGDI ( hDC, LOWORD ( lParam ), HIWORD ( lParam ), TRUE, FALSE );
-
-            A7BmpCopy ( g_bmpGDI_Layer_Tabs, 0, 0, g_bmpTab, 0, 0, __min ( g_bmpGDI_Layer_Tabs -> nWidth, g_bmpTab -> nWidth ), __min ( g_bmpGDI_Layer_Tabs -> nHeight, g_bmpTab -> nHeight ) );
+            g_bmpGDI_Layer_Tabs = A7BmpCreateByGDI ( hDC, LOWORD ( lParam ), HIWORD ( lParam ), TRUE );
+            // A7BmpCopyFull ( g_bmpGDI_Layer_Tabs, 0, 0, g_bmpTab );
 
             ReleaseDC ( hWnd, hDC );
             return 0;
@@ -159,7 +120,7 @@ LRESULT CALLBACK A7MainWinProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             PostQuitMessage ( 0 );
             A7BmpFree ( g_bmp_Tab );
             A7BmpFree ( g_bmpWallPapper );
-            A7BmpFree ( g_bmpTab );
+            // A7BmpFree ( g_bmpTab );
             if ( g_bmpGDI_Layer_BackGround != NULL ) A7BmpFree ( g_bmpGDI_Layer_BackGround );
             if ( g_bmpGDI_Layer_Tabs != NULL ) A7BmpFree ( g_bmpGDI_Layer_Tabs );
             return 0;
@@ -178,8 +139,24 @@ LRESULT CALLBACK A7MainWinProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
                 nCWidth = rt.right - rt.left;
                 nCHeight = rt.bottom - rt.top;
             }
-            A7BmpGDI_Draw ( hDC, 0, 0, g_bmpGDI_Layer_BackGround, 0, 0, nCWidth, nCHeight );
-            A7BmpGDI_Draw ( hDC, 0, 0, g_bmpGDI_Layer_Tabs, 0, 0, nCWidth, nCHeight );
+
+            CONST UINT h = 16;
+            CONST UINT _i = nCHeight * 4 / 5 / h;
+            for ( UINT i = 0; i < _i; ++i ) {
+                A7BmpDrawTextA ( g_bmpGDI_Layer_Tabs, g_ftFace, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ Hellow World!))) What's your name? How old are You?",
+                    8, h+i*h*5/4, h*64, 0, (_i/2-i)*4, 0xff, 0x7f, 0x00, 0xff );
+                A7BmpDrawTextA ( g_bmpGDI_Layer_Tabs, g_ftFace, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ Hellow World!))) What's your name? How old are You?",
+                    8, h+i*h*5/4+1, h*64, 64, (_i/2-i)*4, 0xff, 0xff, 0xff, 0xff );
+            }
+
+
+            A7BmpDrawFull_GDI ( hDC, 0, 0, g_bmpGDI_Layer_BackGround );
+            A7BmpDrawFull_GDI ( hDC, 0, 0, g_bmpGDI_Layer_Tabs );
+
+            // A7BmpGDI_Draw ( hDC, 0, 0, g_bmpGDI_Layer_BackGround, 0, 0, nCWidth, nCHeight );
+            // A7BmpGDI_Draw ( hDC, 0, 0, g_bmpGDI_Layer_Tabs, 0, 0, nCWidth, nCHeight );
+
+
             EndPaint ( hWnd, &ps );
             // DeleteObject ( hbrBlack );
         }

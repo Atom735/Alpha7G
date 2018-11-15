@@ -17,9 +17,17 @@
             "name": "inc MinGW"
         },
         {
+            "path": "F:\\sdk\\freetype-2.9.1-windows-binaries\\include",
+            "name": "inc FreeType2"
+        },
+        {
             "path": "F:\\sdk\\libressl-2.8.2",
             "name": "LibreSSL 2.8.2"
-        }
+        },
+        {
+            "path": "F:\\sdk\\jpeg-9c",
+            "name": "Jpeg-9c"
+        },
 
 
 	],
