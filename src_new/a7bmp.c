@@ -216,9 +216,11 @@ VOID A7BmpDrawRect ( S7Bmp *pDst, UINT nX, UINT nY, UINT nW, UINT nH, BYTE cR, B
     BYTE *pbd = ( BYTE* ) pDst -> pData;
     for ( UINT iy = 0; iy < nH; ++iy ) {
         CONST UINT idy = ( iy + nY );
+        if ( idy >= 0x80000000U ) continue;
         if ( idy >= pDst -> nHeight ) break;
         for ( UINT ix = 0; ix < nW; ++ix ) {
             CONST UINT idx = ( ix + nX );
+            if ( idx >= 0x80000000U ) continue;
             if ( idx >= pDst -> nWidth ) break;
             CONST UINT id = idy * pDst -> nStride + idx * bpp;
             if ( bpp >= 1 ) pbd [ id + 0 ] = cB;
@@ -233,9 +235,11 @@ VOID A7BmpDrawRectA ( S7Bmp *pDst, UINT nX, UINT nY, UINT nW, UINT nH, BYTE cR, 
     BYTE *pbd = ( BYTE* ) pDst -> pData;
     for ( UINT iy = 0; iy < nH; ++iy ) {
         CONST UINT idy = ( iy + nY );
+        if ( idy >= 0x80000000U ) continue;
         if ( idy >= pDst -> nHeight ) break;
         for ( UINT ix = 0; ix < nW; ++ix ) {
             CONST UINT idx = ( ix + nX );
+            if ( idx >= 0x80000000U ) continue;
             if ( idx >= pDst -> nWidth ) break;
             CONST UINT id = idy * pDst -> nStride + idx * bpp;
             if ( bpp >= 1 ) pbd [ id + 0 ] = ( pbd [ id + 0 ] * ( 0xff - cA ) + cB * cA ) / 0xff;
@@ -253,9 +257,11 @@ VOID A7BmpDrawAlphaMap ( S7Bmp *pDst, S7Bmp *pSrc, UINT nX, UINT nY, BYTE cR, BY
     BYTE *pbs = ( BYTE* ) pSrc -> pData;
     for ( UINT iy = 0; iy < pSrc -> nHeight; ++iy ) {
         CONST UINT idy = ( iy + nY + pSrc -> nTop );
+        if ( idy >= 0x80000000U ) continue;
         if ( idy >= pDst -> nHeight ) break;
         for ( UINT ix = 0; ix < pSrc -> nWidth; ++ix ) {
             CONST UINT idx = ( ix + nX + pSrc -> nLeft );
+            if ( idx >= 0x80000000U ) continue;
             if ( idx >= pDst -> nWidth ) break;
             CONST UINT id = idy * pDst -> nStride + idx * 4;
             CONST UINT is = ( iy ) * pSrc -> nStride + ( bMirrorX ? ( pSrc -> nWidth - ix - 1 ) : ix );
@@ -272,9 +278,11 @@ VOID A7BmpDrawAlphaMapA ( S7Bmp *pDst, S7Bmp *pSrc, UINT nX, UINT nY, BYTE cR, B
     BYTE *pbs = ( BYTE* ) pSrc -> pData;
     for ( UINT iy = 0; iy < pSrc -> nHeight; ++iy ) {
         CONST UINT idy = ( iy + nY + pSrc -> nTop );
+        if ( idy >= 0x80000000U ) continue;
         if ( idy >= pDst -> nHeight ) break;
         for ( UINT ix = 0; ix < pSrc -> nWidth; ++ix ) {
             CONST UINT idx = ( ix + nX + pSrc -> nLeft );
+            if ( idx >= 0x80000000U ) continue;
             if ( idx >= pDst -> nWidth ) break;
             CONST UINT id = idy * pDst -> nStride + idx * 4;
             CONST UINT is = ( iy ) * pSrc -> nStride + ( bMirrorX ? ( pSrc -> nWidth - ix - 1 ) : ix );
@@ -290,8 +298,38 @@ VOID A7BmpDrawAlphaMapA ( S7Bmp *pDst, S7Bmp *pSrc, UINT nX, UINT nY, BYTE cR, B
 UINT A7BmpGetStringWidth ( FT_Face ftFace, CONST CHAR *pStr, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking ) {
     FT_Set_Char_Size ( ftFace, 0, nGlyphHeight, 96, 96 );
     UINT x = nGlyphOffsetX;
-    for ( CONST CHAR *ch = pStr; *ch != 0; ++ch ) {
-        CONST UINT iUnicode = *ch;
+    CHAR CONST *ch = pStr;
+    while ( *ch ) {
+        FT_Vector pen = { .x = x, .y = 0, };
+        FT_Set_Transform ( ftFace, NULL, &pen );
+        int err = FT_Load_Char ( ftFace, *ch, FT_LOAD_DEFAULT );
+        if ( err ) return 0;
+        x += ftFace -> glyph -> advance.x + nTracking;
+        ++ch;
+    }
+    return x;
+}
+UINT A7BmpGetStringWidthW ( FT_Face ftFace, CONST WCHAR *pStr, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking ) {
+    FT_Set_Char_Size ( ftFace, 0, nGlyphHeight, 96, 96 );
+    UINT x = nGlyphOffsetX;
+    WCHAR CONST *ch = pStr;
+    while ( *ch ) {
+        FT_Vector pen = { .x = x, .y = 0, };
+        FT_Set_Transform ( ftFace, NULL, &pen );
+        int err = FT_Load_Char ( ftFace, *ch, FT_LOAD_DEFAULT );
+        if ( err ) return 0;
+        x += ftFace -> glyph -> advance.x + nTracking;
+        ++ch;
+    }
+    return x;
+}
+
+UINT A7BmpGetStringWidthU8 ( FT_Face ftFace, CONST BYTE *pStr, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking ) {
+    FT_Set_Char_Size ( ftFace, 0, nGlyphHeight, 96, 96 );
+    UINT x = nGlyphOffsetX;
+    UINT iUnicode = 0;
+    BYTE CONST *ch = pStr;
+    while ( ( ch = A7UnicodeByUTF8 ( &iUnicode, ch ) ) != NULL ) {
         FT_Vector pen = { .x = x, .y = 0, };
         FT_Set_Transform ( ftFace, NULL, &pen );
         int err = FT_Load_Char ( ftFace, iUnicode, FT_LOAD_DEFAULT );
@@ -305,18 +343,65 @@ UINT A7BmpGetStringWidth ( FT_Face ftFace, CONST CHAR *pStr, UINT nGlyphHeight, 
 VOID A7BmpDrawText ( S7Bmp *pDst, FT_Face ftFace, CONST CHAR *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB ) {
     S7Bmp *bmpGlyph = NULL;
     UINT x = nGlyphOffsetX;
-    for ( CHAR CONST *ch = pStr; *ch != 0; ++ch ) {
-        CONST UINT iUnicode = *ch;
-        bmpGlyph = A7BmpCreateByFreeType ( bmpGlyph, ftFace, iUnicode, nGlyphHeight, x );
+    CHAR CONST *ch = pStr;
+    while ( *ch ) {
+        bmpGlyph = A7BmpCreateByFreeType ( bmpGlyph, ftFace, *ch, nGlyphHeight, x );
         A7BmpDrawAlphaMap ( pDst, bmpGlyph, nX, nY, cR, cG, cB, FALSE );
         x += bmpGlyph -> nAdvance + nTracking;
+        ++ch;
     }
 }
 VOID A7BmpDrawTextA ( S7Bmp *pDst, FT_Face ftFace, CONST CHAR *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB, BYTE cA ) {
     S7Bmp *bmpGlyph = NULL;
     UINT x = nGlyphOffsetX;
-    for ( CHAR CONST *ch = pStr; *ch != 0; ++ch ) {
-        CONST UINT iUnicode = *ch;
+    CHAR CONST *ch = pStr;
+    while ( *ch ) {
+        bmpGlyph = A7BmpCreateByFreeType ( bmpGlyph, ftFace, *ch, nGlyphHeight, x );
+        A7BmpDrawAlphaMapA ( pDst, bmpGlyph, nX, nY, cR, cG, cB, cA, FALSE );
+        x += bmpGlyph -> nAdvance + nTracking;
+        ++ch;
+    }
+}
+
+VOID A7BmpDrawTextW ( S7Bmp *pDst, FT_Face ftFace, CONST WCHAR *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB ) {
+    S7Bmp *bmpGlyph = NULL;
+    UINT x = nGlyphOffsetX;
+    WCHAR CONST *ch = pStr;
+    while ( *ch ) {
+        bmpGlyph = A7BmpCreateByFreeType ( bmpGlyph, ftFace, *ch, nGlyphHeight, x );
+        A7BmpDrawAlphaMap ( pDst, bmpGlyph, nX, nY, cR, cG, cB, FALSE );
+        x += bmpGlyph -> nAdvance + nTracking;
+        ++ch;
+    }
+}
+VOID A7BmpDrawTextWA ( S7Bmp *pDst, FT_Face ftFace, CONST WCHAR *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB, BYTE cA ) {
+    S7Bmp *bmpGlyph = NULL;
+    UINT x = nGlyphOffsetX;
+    WCHAR CONST *ch = pStr;
+    while ( *ch ) {
+        bmpGlyph = A7BmpCreateByFreeType ( bmpGlyph, ftFace, *ch, nGlyphHeight, x );
+        A7BmpDrawAlphaMapA ( pDst, bmpGlyph, nX, nY, cR, cG, cB, cA, FALSE );
+        x += bmpGlyph -> nAdvance + nTracking;
+        ++ch;
+    }
+}
+VOID A7BmpDrawTextU8 ( S7Bmp *pDst, FT_Face ftFace, CONST BYTE *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB ) {
+    S7Bmp *bmpGlyph = NULL;
+    UINT x = nGlyphOffsetX;
+    UINT iUnicode = 0;
+    BYTE CONST *ch = pStr;
+    while ( ( ch = A7UnicodeByUTF8 ( &iUnicode, ch ) ) != NULL ) {
+        bmpGlyph = A7BmpCreateByFreeType ( bmpGlyph, ftFace, iUnicode, nGlyphHeight, x );
+        A7BmpDrawAlphaMap ( pDst, bmpGlyph, nX, nY, cR, cG, cB, FALSE );
+        x += bmpGlyph -> nAdvance + nTracking;
+    }
+}
+VOID A7BmpDrawTextU8A ( S7Bmp *pDst, FT_Face ftFace, CONST BYTE *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB, BYTE cA ) {
+    S7Bmp *bmpGlyph = NULL;
+    UINT x = nGlyphOffsetX;
+    UINT iUnicode = 0;
+    BYTE CONST *ch = pStr;
+    while ( ( ch = A7UnicodeByUTF8 ( &iUnicode, ch ) ) != NULL ) {
         bmpGlyph = A7BmpCreateByFreeType ( bmpGlyph, ftFace, iUnicode, nGlyphHeight, x );
         A7BmpDrawAlphaMapA ( pDst, bmpGlyph, nX, nY, cR, cG, cB, cA, FALSE );
         x += bmpGlyph -> nAdvance + nTracking;
@@ -325,3 +410,95 @@ VOID A7BmpDrawTextA ( S7Bmp *pDst, FT_Face ftFace, CONST CHAR *pStr, UINT nX, UI
 
 
 
+VOID A7BmpClearRect ( S7Bmp *pDst, UINT nX, UINT nY, UINT nW, UINT nH ) {
+    CONST UINT bpp = A7BmpBpp ( pDst -> iType );
+    BYTE *pbd = ( BYTE* ) pDst -> pData;
+    for ( UINT iy = 0; iy < nH; ++iy ) {
+        CONST UINT idy = ( iy + nY );
+        if ( idy >= 0x80000000U ) continue;
+        if ( idy >= pDst -> nHeight ) break;
+        for ( UINT ix = 0; ix < nW; ++ix ) {
+            CONST UINT idx = ( ix + nX );
+            if ( idx >= 0x80000000U ) continue;
+            if ( idx >= pDst -> nWidth ) break;
+            CONST UINT id = idy * pDst -> nStride + idx * bpp;
+            if ( bpp >= 1 ) pbd [ id + 0 ] = 0;
+            if ( bpp >= 2 ) pbd [ id + 1 ] = 0;
+            if ( bpp >= 3 ) pbd [ id + 2 ] = 0;
+            if ( bpp >= 4 ) pbd [ id + 3 ] = 0;
+        }
+    }
+}
+
+VOID A7BmpDrawTab ( S7Bmp *pDst, UINT nX, UINT nY, S7Bmp *pTab, BYTE cBgR, BYTE cBgG, BYTE cBgB, UINT nMarginLeft, UINT nMarginMiddle, UINT nMarginRight, FT_Face ftFace, CONST CHAR *pStr, UINT nGlyphHeight, UINT nTracking, BYTE cTxtR, BYTE cTxtG, BYTE cTxtB, FT_Face ftFaceIcon, UINT iUnicodeIcon, UINT nGlyphIconHeight, BYTE cIcoR, BYTE cIcoG, BYTE cIcoB ) {
+
+    A7BmpDrawAlphaMap ( pDst, pTab, nX, nY, cBgR, cBgG, cBgB, FALSE );
+    CONST UINT nX0 = pTab -> nWidth * 64 + nMarginLeft;
+    CONST UINT nX1 = A7BmpGetStringWidth ( ftFace, pStr, nGlyphHeight, nX0, nTracking );
+    CONST UINT nX2 = nX1 + nMarginMiddle;
+    CONST WCHAR pStrIco[2] = { iUnicodeIcon, 0 };
+    CONST UINT nX3 = A7BmpGetStringWidthW ( ftFaceIcon, pStrIco, nGlyphIconHeight, nX2, 0 );
+    CONST UINT nX4 = nX3 + nMarginRight;
+    CONST UINT nW = nX4 / 64 - pTab -> nWidth;
+    A7BmpDrawRect ( pDst, nX + pTab -> nWidth, nY, nW, pTab -> nHeight, cBgR, cBgG, cBgB );
+    A7BmpDrawAlphaMap ( pDst, pTab, nX + nW + pTab -> nWidth, nY, cBgR, cBgG, cBgB, TRUE );
+
+    CONST UINT nY0 = pTab -> nHeight / 2 + nGlyphHeight / 128;
+    A7BmpDrawText ( pDst, ftFace, pStr, nX, nY + nY0, nGlyphHeight, nX0, nTracking, cTxtR, cTxtG, cTxtB );
+    CONST UINT nY1 = pTab -> nHeight / 2 + nGlyphIconHeight / 128;
+    A7BmpDrawTextW ( pDst, ftFaceIcon, pStrIco, nX, nY + nY1, nGlyphIconHeight, nX2, 0, cIcoR, cIcoG, cIcoB );
+}
+VOID A7BmpDrawTabA ( S7Bmp *pDst, UINT nX, UINT nY, S7Bmp *pTab, BYTE cBgR, BYTE cBgG, BYTE cBgB, BYTE cBgA, UINT nMarginLeft, UINT nMarginMiddle, UINT nMarginRight, FT_Face ftFace, CONST CHAR *pStr, UINT nGlyphHeight, UINT nTracking, BYTE cTxtR, BYTE cTxtG, BYTE cTxtB, BYTE cTxtA, FT_Face ftFaceIcon, UINT iUnicodeIcon, UINT nGlyphIconHeight, BYTE cIcoR, BYTE cIcoG, BYTE cIcoB, BYTE cIcoA ) {
+
+    A7BmpDrawAlphaMapA ( pDst, pTab, nX, nY, cBgR, cBgG, cBgB, cBgA, FALSE );
+    CONST UINT nX0 = pTab -> nWidth * 64 + nMarginLeft;
+    CONST UINT nX1 = A7BmpGetStringWidth ( ftFace, pStr, nGlyphHeight, nX0, nTracking );
+    CONST UINT nX2 = nX1 + nMarginMiddle;
+    CONST WCHAR pStrIco[2] = { iUnicodeIcon, 0 };
+    CONST UINT nX3 = A7BmpGetStringWidthW ( ftFaceIcon, pStrIco, nGlyphIconHeight, nX2, 0 );
+    CONST UINT nX4 = nX3 + nMarginRight;
+    CONST UINT nW = nX4 / 64 - pTab -> nWidth;
+    A7BmpDrawRectA ( pDst, nX + pTab -> nWidth, nY, nW, pTab -> nHeight, cBgR, cBgG, cBgB, cBgA );
+    A7BmpDrawAlphaMapA ( pDst, pTab, nX + nW + pTab -> nWidth, nY, cBgR, cBgG, cBgB, cBgA, TRUE );
+
+    CONST UINT nY0 = pTab -> nHeight / 2 + nGlyphHeight / 128;
+    A7BmpDrawTextA ( pDst, ftFace, pStr, nX, nY + nY0, nGlyphHeight, nX0, nTracking, cTxtR, cTxtG, cTxtB, cTxtA );
+    CONST UINT nY1 = pTab -> nHeight / 2 + nGlyphIconHeight / 128;
+    A7BmpDrawTextWA ( pDst, ftFaceIcon, pStrIco, nX, nY + nY1, nGlyphIconHeight, nX2, 0, cIcoR, cIcoG, cIcoB, cIcoA );
+}
+VOID A7BmpDrawTabW ( S7Bmp *pDst, UINT nX, UINT nY, S7Bmp *pTab, BYTE cBgR, BYTE cBgG, BYTE cBgB, UINT nMarginLeft, UINT nMarginMiddle, UINT nMarginRight, FT_Face ftFace, CONST WCHAR *pStr, UINT nGlyphHeight, UINT nTracking, BYTE cTxtR, BYTE cTxtG, BYTE cTxtB, FT_Face ftFaceIcon, UINT iUnicodeIcon, UINT nGlyphIconHeight, BYTE cIcoR, BYTE cIcoG, BYTE cIcoB ) {
+
+    A7BmpDrawAlphaMap ( pDst, pTab, nX, nY, cBgR, cBgG, cBgB, FALSE );
+    CONST UINT nX0 = pTab -> nWidth * 64 + nMarginLeft;
+    CONST UINT nX1 = A7BmpGetStringWidthW ( ftFace, pStr, nGlyphHeight, nX0, nTracking );
+    CONST UINT nX2 = nX1 + nMarginMiddle;
+    CONST WCHAR pStrIco[2] = { iUnicodeIcon, 0 };
+    CONST UINT nX3 = A7BmpGetStringWidthW ( ftFaceIcon, pStrIco, nGlyphIconHeight, nX2, 0 );
+    CONST UINT nX4 = nX3 + nMarginRight;
+    CONST UINT nW = nX4 / 64 - pTab -> nWidth;
+    A7BmpDrawRect ( pDst, nX + pTab -> nWidth, nY, nW, pTab -> nHeight, cBgR, cBgG, cBgB );
+    A7BmpDrawAlphaMap ( pDst, pTab, nX + nW + pTab -> nWidth, nY, cBgR, cBgG, cBgB, TRUE );
+
+    CONST UINT nY0 = pTab -> nHeight / 2 + nGlyphHeight / 128;
+    A7BmpDrawTextW ( pDst, ftFace, pStr, nX, nY + nY0, nGlyphHeight, nX0, nTracking, cTxtR, cTxtG, cTxtB );
+    CONST UINT nY1 = pTab -> nHeight / 2 + nGlyphIconHeight / 128;
+    A7BmpDrawTextW ( pDst, ftFaceIcon, pStrIco, nX, nY + nY1, nGlyphIconHeight, nX2, 0, cIcoR, cIcoG, cIcoB );
+}
+VOID A7BmpDrawTabWA ( S7Bmp *pDst, UINT nX, UINT nY, S7Bmp *pTab, BYTE cBgR, BYTE cBgG, BYTE cBgB, BYTE cBgA, UINT nMarginLeft, UINT nMarginMiddle, UINT nMarginRight, FT_Face ftFace, CONST WCHAR *pStr, UINT nGlyphHeight, UINT nTracking, BYTE cTxtR, BYTE cTxtG, BYTE cTxtB, BYTE cTxtA, FT_Face ftFaceIcon, UINT iUnicodeIcon, UINT nGlyphIconHeight, BYTE cIcoR, BYTE cIcoG, BYTE cIcoB, BYTE cIcoA ) {
+
+    A7BmpDrawAlphaMapA ( pDst, pTab, nX, nY, cBgR, cBgG, cBgB, cBgA, FALSE );
+    CONST UINT nX0 = pTab -> nWidth * 64 + nMarginLeft;
+    CONST UINT nX1 = A7BmpGetStringWidthW ( ftFace, pStr, nGlyphHeight, nX0, nTracking );
+    CONST UINT nX2 = nX1 + nMarginMiddle;
+    CONST WCHAR pStrIco[2] = { iUnicodeIcon, 0 };
+    CONST UINT nX3 = A7BmpGetStringWidthW ( ftFaceIcon, pStrIco, nGlyphIconHeight, nX2, 0 );
+    CONST UINT nX4 = nX3 + nMarginRight;
+    CONST UINT nW = nX4 / 64 - pTab -> nWidth;
+    A7BmpDrawRectA ( pDst, nX + pTab -> nWidth, nY, nW, pTab -> nHeight, cBgR, cBgG, cBgB, cBgA );
+    A7BmpDrawAlphaMapA ( pDst, pTab, nX + nW + pTab -> nWidth, nY, cBgR, cBgG, cBgB, cBgA, TRUE );
+
+    CONST UINT nY0 = pTab -> nHeight / 2 + nGlyphHeight / 128;
+    A7BmpDrawTextWA ( pDst, ftFace, pStr, nX, nY + nY0, nGlyphHeight, nX0, nTracking, cTxtR, cTxtG, cTxtB, cTxtA );
+    CONST UINT nY1 = pTab -> nHeight / 2 + nGlyphIconHeight / 128;
+    A7BmpDrawTextWA ( pDst, ftFaceIcon, pStrIco, nX, nY + nY1, nGlyphIconHeight, nX2, 0, cIcoR, cIcoG, cIcoB, cIcoA );
+}

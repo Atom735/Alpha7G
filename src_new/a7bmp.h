@@ -6,6 +6,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include "a7unicode.h"
+
 /* Структура текстур */
 typedef struct _S7Bmp S7Bmp;
 struct _S7Bmp {
@@ -27,6 +29,7 @@ struct _S7Bmp {
     INT     nTop;
 };
 
+/* Тип структуры Bmp */
 enum {
     D7BMP_NULL = 0,
     /* Обычные A7 карты */
@@ -69,6 +72,13 @@ VOID A7BmpDrawRect ( S7Bmp *pDst, UINT nX, UINT nY, UINT nW, UINT nH, BYTE cR, B
 VOID A7BmpDrawRectA ( S7Bmp *pDst, UINT nX, UINT nY, UINT nW, UINT nH, BYTE cR, BYTE cG, BYTE cB, BYTE cA );
 
 
+
+/* Очищает область текстуры */
+VOID A7BmpClearRect ( S7Bmp *pDst, UINT nX, UINT nY, UINT nW, UINT nH );
+
+
+
+
 /* Рисует маску с указаным цветом на цветовую карту */
 VOID A7BmpDrawAlphaMap ( S7Bmp *pDst, S7Bmp *pSrc, UINT nX, UINT nY, BYTE cR, BYTE cG, BYTE cB, BOOL bMirrorX );
 VOID A7BmpDrawAlphaMapA ( S7Bmp *pDst, S7Bmp *pSrc, UINT nX, UINT nY, BYTE cR, BYTE cG, BYTE cB, BYTE cA, BOOL bMirrorX );
@@ -84,9 +94,17 @@ VOID A7BmpDrawFull_GDI ( HDC hDC, UINT nDX, UINT nDY, S7Bmp * pSrc );
 
 /* Получает длину строки в текселях */
 UINT A7BmpGetStringWidth ( FT_Face ftFace, CONST CHAR *pStr, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking );
+UINT A7BmpGetStringWidthW ( FT_Face ftFace, CONST WCHAR *pStr, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking );
+UINT A7BmpGetStringWidthU8 ( FT_Face ftFace, CONST BYTE *pStr, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking );
 /* Рисует строку на текстуру */
 VOID A7BmpDrawText ( S7Bmp *pDst, FT_Face ftFace, CONST CHAR *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB );
 VOID A7BmpDrawTextA ( S7Bmp *pDst, FT_Face ftFace, CONST CHAR *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB, BYTE cA );
+VOID A7BmpDrawTextW ( S7Bmp *pDst, FT_Face ftFace, CONST WCHAR *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB );
+VOID A7BmpDrawTextWA ( S7Bmp *pDst, FT_Face ftFace, CONST WCHAR *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB, BYTE cA );
+VOID A7BmpDrawTextU8 ( S7Bmp *pDst, FT_Face ftFace, CONST BYTE *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB );
+VOID A7BmpDrawTextU8A ( S7Bmp *pDst, FT_Face ftFace, CONST BYTE *pStr, UINT nX, UINT nY, UINT nGlyphHeight, UINT nGlyphOffsetX, UINT nTracking, BYTE cR, BYTE cG, BYTE cB, BYTE cA );
+
+
 
 
 

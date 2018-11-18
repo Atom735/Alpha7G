@@ -27,12 +27,18 @@ PRE_LIBS =\
 
 CC = gcc.exe
 
-CPPFLAGS = $(addprefix -D, $(PRE_DEFINES)) $(addprefix -I, $(PATH_INCLUDE))
+CPPFLAGS =\
+	$(addprefix -D, $(PRE_DEFINES))\
+	$(addprefix -I, $(PATH_INCLUDE))\
+	-include "src_new/A7Header.h"
 CFLAGS = -mwindows -municode -march=pentium4 -Wall -O3
 LDFLAGS = $(addprefix -L, $(PATH_LIBS)) -ljpeg -lGDI32 -lmingw32 -lws2_32 $(PRE_LIBS)
 
 FILES = a7main.c a7log.c a7err.c a7net.c a7ut.c
-FILES = a7main.c a7bmp.c
+FILES = \
+	A7Gui.c\
+	A7Err.c\
+	A7Main.c
 
 SOURCES = $(addprefix src/, $(FILES))
 OBJECTS = $(addsuffix .o, $(addprefix obj/, $(FILES)))

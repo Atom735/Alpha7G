@@ -1,47 +1,46 @@
 {
+	"build_systems":
+	[
+		{
+			"cmd":
+			[
+				"$project_path\\+build.bat"
+			],
+			"name": "mingw-make"
+		}
+	],
 	"folders":
 	[
 		{
 			"path": "."
 		},
-        {
-            "path": "F:\\sdk\\SDL2-2.0.8\\i686-w64-mingw32\\include",
-            "name": "inc SDL"
-        },
-        {
-            "path": "F:\\sdk\\libressl-2.5.5-windows\\include",
-            "name": "inc SSL"
-        },
-        {
-            "path": "C:\\Program Files\\mingw-w64\\i686-8.1.0-posix-sjlj-rt_v6-rev0\\mingw32\\i686-w64-mingw32\\include",
-            "name": "inc MinGW"
-        },
-        {
-            "path": "F:\\sdk\\freetype-2.9.1-windows-binaries\\include",
-            "name": "inc FreeType2"
-        },
-        {
-            "path": "F:\\sdk\\libressl-2.8.2",
-            "name": "LibreSSL 2.8.2"
-        },
-        {
-            "path": "F:\\sdk\\jpeg-9c",
-            "name": "Jpeg-9c"
-        },
-
-
+		{
+			"name": "inc MinGW",
+			"path": "C:\\Program Files\\mingw-w64\\i686-8.1.0-posix-sjlj-rt_v6-rev0\\mingw32\\i686-w64-mingw32\\include"
+		},
+		{
+			"name": "inc SDL",
+			"path": "F:\\sdk\\SDL2-2.0.8\\i686-w64-mingw32\\include"
+		},
+		{
+			"name": "inc SSL",
+			"path": "F:\\sdk\\libressl-2.5.5-windows\\include"
+		},
+		{
+			"name": "inc FreeType2",
+			"path": "F:\\sdk\\freetype-2.9.1-windows-binaries\\include"
+		},
+		{
+			"name": "LibreSSL 2.8.2",
+			"path": "F:\\sdk\\libressl-2.8.2"
+		},
+		{
+			"name": "Jpeg-9c",
+			"path": "F:\\sdk\\jpeg-9c"
+		}
 	],
-    "build_systems":
-    [
-        {
-            "name": "mingw-make",
-            "cmd": ["$project_path\\+build.bat"],
-        }
-    ],
-    "settings":
-    {
-        "color_scheme": "A7Mariana.sublime-color-scheme",
-    },
-
-
+	"settings":
+	{
+		"color_scheme": "A7Mariana.sublime-color-scheme"
+	}
 }
