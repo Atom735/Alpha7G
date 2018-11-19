@@ -250,7 +250,7 @@ FT_F26Dot6 A7TexDraw_StaticText ( S7Tex *pDst, S7StaticText *pElement ) {
         if ( ( FT_HAS_KERNING ( ftFace ) ) && ( iGlyphIndexLast != 0 ) && ( iGlyphIndex != 0 ) ) {
             FT_Vector delta;
             D7ERR_FREETYPE ( FT_Get_Kerning, ftFace, iGlyphIndexLast, iGlyphIndex, FT_KERNING_DEFAULT, &delta );
-            pen . x = delta . x;
+            pen . x += delta . x;
         }
         if ( pElement -> nOblique == 0 ) {
             FT_Set_Transform ( ftFace, NULL, &pen );
@@ -272,7 +272,7 @@ FT_F26Dot6 A7TexDraw_StaticText ( S7Tex *pDst, S7StaticText *pElement ) {
             .pData          = bmp -> buffer,
 
         };
-        A7TexDrawAlphaMap ( pDst, &tex, glyph -> bitmap_left, glyph -> bitmap_top + bmp -> width, pElement -> iARGB, 0 );
+        A7TexDrawAlphaMap ( pDst, &tex, glyph -> bitmap_left, -glyph -> bitmap_top, pElement -> iARGB, 0 );
     }
     return pen . x - pElement -> nX;
 }
