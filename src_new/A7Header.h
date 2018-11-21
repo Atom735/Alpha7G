@@ -8,6 +8,7 @@
 #include <String.h>
 #include <Time.h>
 #include <WChar.h>
+#include <WCType.h>
 
 #include <FT2Build.h>
 #include FT_FREETYPE_H

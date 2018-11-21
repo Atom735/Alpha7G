@@ -215,64 +215,256 @@ VOID A7TexDrawAlphaMap ( S7Tex *pDst, S7Tex *pSrc, UINT nX, UINT nY, UINT32 iARG
     }
 }
 
-FT_F26Dot6 A7TexDraw_StaticText ( S7Tex *pDst, S7StaticText *pElement ) {
-    if ( pElement -> iType != DT7_STATIC_TEXT ) return 0;
-    FT_UInt iGlyphIndexLast = 0;
-    FT_Face ftFace = pElement -> ftFace;
-    D7ERR_FREETYPE ( FT_Set_Char_Size, ftFace, 0, pElement -> nHeight, g7Tex_nDpiHorz, g7Tex_nDpiVert );
-    FT_Vector pen = { .x = pElement -> nX, .y = - pElement -> nY, };
-    BYTE CONST * pv = pElement -> pText;
-    UINT iCode = pElement -> iFlags & D7TEXDST_C_MASK_;
-    while ( TRUE ) {
-        FT_UInt iUnicode = 0;
-        switch ( iCode ) {
-            case D7TEXDST_C_ASCII:
-                iUnicode = pv [ 0 ];
-                ++pv;
-                break;
-            case D7TEXDST_C_UTF16:
-                iUnicode = pv [ 0 ] + ( pv [ 1 ] << 8 );
-                pv += 2;
-                break;
-            case D7TEXDST_C_UTF32:
-                iUnicode = pv [ 0 ] + ( pv [ 1 ] << 8 ) + ( pv [ 2 ] << 16 ) + ( pv [ 3 ] << 24 );
-                pv += 4;
-                break;
+struct _S7Shape {
+    BYTE        *pData;
+    UINT        nX, nW, nY, nH;
+};
+
+struct _S7SetsButton {
+    UINT        iType;
+
+    FT_Face     txt_ftFace;
+    UINT32      txt_iARGB;
+    UINT32      txt_iFlags;
+    FT_F26Dot6  txt_nHeight;
+    FT_F26Dot6  txt_nKerning;
+    FT_F26Dot6  txt_nOblique;
+
+    UINT32      bg_iARGB;
+    FT_F26Dot6  bg_nHeight;
+
+
+};
+
+struct _S7Button {
+    UINT        iType;
+    S7SetsButton *pSets;
+    LPCWSTR     pText;
+};
+extern FT_Face g_ftFace;
+VOID A7TexDraw_Button ( S7Tex *pDst ) {
+    A7TexFillRect_FULL ( pDst, 0x00000000 );
+
+    S7GuiTextSets sets = {
+        .iType  = 0,
+        .ftFace = g_ftFace,
+        .iARGB  = 0xffffffff,
+        .iFlags = D7GUITEXT_ALIGN_RIGHT,
+        .nHeight    = 18 * 64,
+        .nOffsetX   = 0,
+        .nOffsetY   = 0,
+        .nLineHeight= 24 * 64,
+        .nLineWidth = 0,
+        .nTracking  = 0,
+        .nOblique   = 0,
+    };
+    A7GuiDraw_TextWide ( pDst, 256, 128*1, L"Привет мир, дремучий!\nКак житуха?)))\n☺☻♥♦♣♠", &sets );
+    sets . iFlags ^= D7GUITEXT_AA_LCD;
+    A7GuiDraw_TextWide ( pDst, 256, 128*2, L"Привет мир, дремучий!\nКак житуха?)))\n☺☻♥♦♣♠", &sets );
+    sets . iFlags ^= D7GUITEXT_AA_LCD_INV;
+    A7GuiDraw_TextWide ( pDst, 256, 128*3, L"Привет мир, дремучий!\nКак житуха?)))\n☺☻♥♦♣♠", &sets );
+    sets . iFlags ^= D7GUITEXT_AA_LCD_INV;
+    sets . iFlags ^= D7GUITEXT_AA_LCD;
+    sets . iFlags ^= D7GUITEXT_AA_GRAYSCALE;
+    A7GuiDraw_TextWide ( pDst, 512, 128*1, L"Привет мир, дремучий!\nКак житуха?)))\n☺☻♥♦♣♠", &sets );
+    sets . iFlags ^= D7GUITEXT_AA_LCD;
+    A7GuiDraw_TextWide ( pDst, 512, 128*2, L"Привет мир, дремучий!\nКак житуха?)))\n☺☻♥♦♣♠", &sets );
+    sets . iFlags ^= D7GUITEXT_AA_LCD_INV;
+    A7GuiDraw_TextWide ( pDst, 512, 128*3, L"Привет мир, дремучий!\nКак житуха?)))\n☺☻♥♦♣♠", &sets );
+}
+
+
+
+
+
+
+/* Отрисовать закруглённую форму */
+VOID A7GuiDraw_ShapeRound ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR ) {
+    BYTE * CONST pbd = pDst -> pData;
+    CONST UINT iR = ceilf ( fR );
+    CONST UINT iX = nW - iR - 1;
+    CONST UINT iY = nH - iR - 1;
+    CONST UINT cA = ( ( iARGB >> 030 ) & 0xff );
+    CONST UINT cR = ( ( iARGB >> 020 ) & 0xff ) * cA / 0xff;
+    CONST UINT cG = ( ( iARGB >> 010 ) & 0xff ) * cA / 0xff;
+    CONST UINT cB = ( ( iARGB >> 000 ) & 0xff ) * cA / 0xff;
+    for ( UINT iy = 0; iy < nH; ++iy ) {
+        CONST UINT idy = iy + nY;
+        if ( idy & 0x80000000U ) continue;
+        if ( idy >= pDst -> nHeight ) break;
+        for ( UINT ix = 0; ix < nW; ++ix ) {
+            CONST UINT idx = ix + nX;
+            if ( idx & 0x80000000U ) continue;
+            if ( idx >= pDst -> nWidth ) break;
+            CONST UINT id = idy * pDst -> nStride + idx * 3;
+            CONST FLOAT fx = ix < iR ? ( FLOAT ) ( ix ) - fR :
+                ix > iX ? ( FLOAT ) ( nW - ix - 1 ) - fR : 0.0f;
+            CONST FLOAT fy = iy < iR ? ( FLOAT ) ( iy ) - fR :
+                iy > iY ? ( FLOAT ) ( nH - iy - 1 ) - fR : 0.0f;
+            CONST FLOAT r = fR - sqrtf ( fx * fx + fy * fy ) + 1.0f;
+            CONST UINT  a = r > 1.0f ? cA : r > 0.0f ? r * (FLOAT) cA : 0x00;
+            pbd [ id + 0 ] = ( pbd [ id + 0 ] * ( 0xff - a ) + cB * a ) / 0xff;
+            pbd [ id + 1 ] = ( pbd [ id + 1 ] * ( 0xff - a ) + cG * a ) / 0xff;
+            pbd [ id + 2 ] = ( pbd [ id + 2 ] * ( 0xff - a ) + cR * a ) / 0xff;
+            // pbd [ id + 2 ] = fx + fy;
         }
-        if ( iUnicode == 0 ) break;
-        if ( iUnicode == '\n' ) {
-            pen . y -= pElement -> nLineHeight;
-            pen . x  = pElement -> nX;
-            iGlyphIndexLast = 0;
-            continue;
-        }
-        FT_UInt iGlyphIndex = FT_Get_Char_Index ( ftFace, iUnicode );
-        if ( ( FT_HAS_KERNING ( ftFace ) ) && ( iGlyphIndexLast != 0 ) && ( iGlyphIndex != 0 ) ) {
+    }
+}
+
+UINT A7GetWordWidth_TextWide ( LPCWSTR * pOIText, S7GuiTextSets *pSets ) {
+    CONST FT_Face   ftFace      = pSets -> ftFace;
+    CONST BOOL      bKerning    = ( pSets -> iFlags & D7GUITEXT_KERNING ) && ( FT_HAS_KERNING ( ftFace ) );
+    FT_UInt         iGlyphIndexLast = 0;
+    D7ERR_FREETYPE ( FT_Set_Char_Size, ftFace, 0, pSets -> nHeight * 72 / g7Tex_nDpiVert, g7Tex_nDpiHorz, g7Tex_nDpiVert );
+    FT_F26Dot6 width = 0;
+    LPCWSTR pText = *pOIText;
+    while ( iswalnum ( *pText ) ) {
+        CONST FT_UInt iGlyphIndex = FT_Get_Char_Index ( ftFace, *pText );
+        if ( bKerning && ( iGlyphIndexLast != 0 ) && ( iGlyphIndex != 0 ) ) {
             FT_Vector delta;
             D7ERR_FREETYPE ( FT_Get_Kerning, ftFace, iGlyphIndexLast, iGlyphIndex, FT_KERNING_DEFAULT, &delta );
-            pen . x += delta . x;
+            width += delta . x;
         }
-        if ( pElement -> nOblique == 0 ) {
-            FT_Set_Transform ( ftFace, NULL, &pen );
-        } else {
-            FT_Matrix mat = { .xx = 0x10000L, .xy = pElement -> nOblique, .yx = 0, .yy = 0x10000L, };
-            FT_Set_Transform ( ftFace, &mat, &pen );
-        }
-        D7ERR_FREETYPE ( FT_Load_Glyph, ftFace, iGlyphIndex, FT_LOAD_RENDER );
-        FT_GlyphSlot glyph = ftFace -> glyph;
+        D7ERR_FREETYPE ( FT_Load_Glyph, ftFace, iGlyphIndex, FT_LOAD_DEFAULT );
+        CONST FT_GlyphSlot glyph = ftFace -> glyph;
         iGlyphIndexLast = iGlyphIndex;
-        pen . x += glyph -> advance.x + pElement -> nTracking;
-        FT_Bitmap *bmp = & glyph -> bitmap;
-        S7Tex tex = {
-            .iType          = DT7_TEX_GLYPH_A8,
-            .bAllocated     = FALSE,
-            .nWidth         = bmp -> width,
-            .nHeight        = bmp -> rows,
-            .nStride        = bmp -> pitch,
-            .pData          = bmp -> buffer,
-
-        };
-        A7TexDrawAlphaMap ( pDst, &tex, glyph -> bitmap_left, -glyph -> bitmap_top, pElement -> iARGB, 0 );
+        width += glyph -> advance.x + pSets -> nTracking;
+        ++pText;
     }
-    return pen . x - pElement -> nX;
+    *pOIText = pText;
+    return width;
+}
+UINT A7GetLineWidth_TextWide ( LPCWSTR * pOIText, S7GuiTextSets *pSets ) {
+    CONST FT_Face   ftFace      = pSets -> ftFace;
+    CONST BOOL      bKerning    = ( pSets -> iFlags & D7GUITEXT_KERNING ) && ( FT_HAS_KERNING ( ftFace ) );
+    FT_UInt         iGlyphIndexLast = 0;
+    D7ERR_FREETYPE ( FT_Set_Char_Size, ftFace, 0, pSets -> nHeight * 72 / g7Tex_nDpiVert, g7Tex_nDpiHorz, g7Tex_nDpiVert );
+    FT_F26Dot6 width = 0;
+    LPCWSTR pText = *pOIText;
+    while ( ( *pText != 0 ) && ( *pText != '\n' ) ) {
+        CONST FT_UInt iGlyphIndex = FT_Get_Char_Index ( ftFace, *pText );
+        if ( bKerning && ( iGlyphIndexLast != 0 ) && ( iGlyphIndex != 0 ) ) {
+            FT_Vector delta;
+            D7ERR_FREETYPE ( FT_Get_Kerning, ftFace, iGlyphIndexLast, iGlyphIndex, FT_KERNING_DEFAULT, &delta );
+            width += delta . x;
+        }
+        D7ERR_FREETYPE ( FT_Load_Glyph, ftFace, iGlyphIndex, FT_LOAD_DEFAULT );
+        CONST FT_GlyphSlot glyph = ftFace -> glyph;
+        iGlyphIndexLast = iGlyphIndex;
+        width += glyph -> advance.x + pSets -> nTracking;
+        ++pText;
+    }
+    *pOIText = pText;
+    return width;
+}
+
+/* Отрисовать текст */
+VOID A7GuiDraw_TextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTextSets *pSets ) {
+    BYTE * CONST pbd = pDst -> pData;
+    CONST UINT cA = ( ( pSets -> iARGB >> 030 ) & 0xff );
+    CONST UINT cR = ( ( pSets -> iARGB >> 020 ) & 0xff ) * cA / 0xff;
+    CONST UINT cG = ( ( pSets -> iARGB >> 010 ) & 0xff ) * cA / 0xff;
+    CONST UINT cB = ( ( pSets -> iARGB >> 000 ) & 0xff ) * cA / 0xff;
+    CONST FT_Face   ftFace      = pSets -> ftFace;
+    CONST BOOL      bKerning    = ( pSets -> iFlags & D7GUITEXT_KERNING ) && ( FT_HAS_KERNING ( ftFace ) );
+    CONST BOOL      bOblique    = pSets -> nOblique != 0;
+    CONST BOOL      bR2L        = ( pSets -> iFlags & D7GUITEXT_RIGHT2LEFT );
+    CONST BOOL      bGS         = ( pSets -> iFlags & D7GUITEXT_AA_GRAYSCALE );
+    CONST BOOL      bLCD        = ( pSets -> iFlags & D7GUITEXT_AA_LCD );
+    CONST BOOL      bLCDINV     = ( pSets -> iFlags & D7GUITEXT_AA_LCD_INV );
+    CONST BOOL      bAlignR     = ( pSets -> iFlags & D7GUITEXT_ALIGN_RIGHT );
+    CONST BOOL      bAlignC     = ( pSets -> iFlags & D7GUITEXT_ALIGN_CENTER );
+    FT_UInt         iGlyphIndexLast = 0;
+    D7ERR_FREETYPE ( FT_Set_Char_Size, ftFace, 0, pSets -> nHeight * 72 / g7Tex_nDpiVert, g7Tex_nDpiHorz, g7Tex_nDpiVert );
+
+    {
+        LPCWSTR pWord = pText;
+        FT_F26Dot6 w = A7GetWordWidth_TextWide ( &pWord, pSets );
+        A7TexFillRect ( pDst, nX, nY, w/64, 10, 0xff007fff );
+        pWord = pText;
+        w = A7GetLineWidth_TextWide ( &pWord, pSets );
+        A7TexFillRect ( pDst, nX, nY+10, w/64, 10, 0xffff007f );
+    }
+
+    FT_Vector pen = { .x = pSets -> nOffsetX, .y = - pSets -> nOffsetY, };
+    VOID _newLine ( UINT i ) {
+        iGlyphIndexLast = 0;
+        pen . x = pSets -> nOffsetX;
+        pen . y -= pSets -> nLineHeight;
+        if ( bAlignR || bAlignC ) {
+            PCWSTR pszLineStart = pText + i;
+            FT_F26Dot6 len = A7GetLineWidth_TextWide ( &pszLineStart, pSets );
+            pen . x -= bAlignR ? len : len / 2;
+        }
+    }
+    _newLine ( 0 );
+    for ( UINT i = 0; pText [ i ] != 0; ++i ) {
+        if ( pText [ i ] == '\n' ) {
+            _newLine ( i + 1 );
+            continue;
+        }
+        CONST FT_UInt iGlyphIndex = FT_Get_Char_Index ( ftFace, pText [ i ] );
+        if ( bKerning && ( iGlyphIndexLast != 0 ) && ( iGlyphIndex != 0 ) ) {
+            FT_Vector delta;
+            D7ERR_FREETYPE ( FT_Get_Kerning, ftFace, iGlyphIndexLast, iGlyphIndex, FT_KERNING_DEFAULT, &delta );
+            if ( bR2L ) {
+                pen . x -= delta . x;
+            } else {
+                pen . x += delta . x;
+            }
+        }
+        if ( bOblique ) {
+            FT_Matrix mat = { .xx = 0x10000L, .xy = pSets -> nOblique, .yx = 0, .yy = 0x10000L, };
+            FT_Set_Transform ( ftFace, &mat, &pen );
+        } else {
+            FT_Set_Transform ( ftFace, NULL, &pen );
+        }
+        D7ERR_FREETYPE ( FT_Load_Glyph, ftFace, iGlyphIndex, FT_LOAD_DEFAULT /*FT_LOAD_RENDER*/ );
+        CONST FT_GlyphSlot glyph = ftFace -> glyph;
+        D7ERR_FREETYPE ( FT_Render_Glyph, glyph, ( bLCD && bGS ) ? FT_RENDER_MODE_LCD_V : bLCD ? FT_RENDER_MODE_LCD : bGS ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO );
+        iGlyphIndexLast = iGlyphIndex;
+        if ( bR2L ) {
+            pen . x -= glyph -> advance.x + pSets -> nTracking;
+        } else {
+            pen . x += glyph -> advance.x + pSets -> nTracking;
+        }
+        FT_Bitmap *bmp = & glyph -> bitmap;
+        CONST UINT nW = ( bLCD && !bGS ) ? bmp -> width / 3 : bmp -> width;
+        CONST UINT nH = ( bLCD && bGS ) ? bmp -> rows / 3 : bmp -> rows;
+        BYTE * CONST pbs = bmp -> buffer;
+        for ( UINT iy = 0; iy < nH; ++iy ) {
+            CONST UINT idy = iy + nY - glyph -> bitmap_top;
+            if ( idy & 0x80000000U ) continue;
+            if ( idy >= pDst -> nHeight ) break;
+            for ( UINT ix = 0; ix < nW; ++ix ) {
+                CONST UINT idx = ix + nX + glyph -> bitmap_left;
+                if ( idx & 0x80000000U ) continue;
+                if ( idx >= pDst -> nWidth ) break;
+                CONST UINT is = ( bLCD && bGS ? iy * 3 : iy ) * bmp -> pitch + ( bLCD && !bGS ? ix * 3 : bGS ? ix : ( ix >> 3 ) );
+                CONST UINT id = idy * pDst -> nStride + idx * 3;
+                if ( bLCD && bGS ) {
+                    CONST UINT is = iy * 3 * bmp -> pitch + ix;
+                    CONST UINT aR = pbs [ is + ( bLCDINV ? 2 * bmp -> pitch : 0 ) ] * cA / 0xff;
+                    CONST UINT aG = pbs [ is + bmp -> pitch ] * cA / 0xff;
+                    CONST UINT aB = pbs [ is + ( bLCDINV ? 0 : 2 * bmp -> pitch ) ] * cA / 0xff;
+                    pbd [ id + 0 ] = ( pbd [ id + 0 ] * ( 0xff - aB ) + cB * aB ) / 0xff;
+                    pbd [ id + 1 ] = ( pbd [ id + 1 ] * ( 0xff - aG ) + cG * aG ) / 0xff;
+                    pbd [ id + 2 ] = ( pbd [ id + 2 ] * ( 0xff - aR ) + cR * aR ) / 0xff;
+                } else
+                if ( bLCD ) {
+                    CONST UINT aR = pbs [ is + ( bLCDINV ? 2 : 0 ) ] * cA / 0xff;
+                    CONST UINT aG = pbs [ is + 1 ] * cA / 0xff;
+                    CONST UINT aB = pbs [ is + ( bLCDINV ? 0 : 2 ) ] * cA / 0xff;
+                    pbd [ id + 0 ] = ( pbd [ id + 0 ] * ( 0xff - aB ) + cB * aB ) / 0xff;
+                    pbd [ id + 1 ] = ( pbd [ id + 1 ] * ( 0xff - aG ) + cG * aG ) / 0xff;
+                    pbd [ id + 2 ] = ( pbd [ id + 2 ] * ( 0xff - aR ) + cR * aR ) / 0xff;
+                } else {
+                    CONST UINT a = bGS ? pbs [ is ] * cA / 0xff : ( pbs [ is ] & ( 0x80 >> ( ix & 7 ) ) ) ? cA : 0;
+                    pbd [ id + 0 ] = ( pbd [ id + 0 ] * ( 0xff - a ) + cB * a ) / 0xff;
+                    pbd [ id + 1 ] = ( pbd [ id + 1 ] * ( 0xff - a ) + cG * a ) / 0xff;
+                    pbd [ id + 2 ] = ( pbd [ id + 2 ] * ( 0xff - a ) + cR * a ) / 0xff;
+                }
+            }
+        }
+    }
 }

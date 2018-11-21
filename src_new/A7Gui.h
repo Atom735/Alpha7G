@@ -7,21 +7,29 @@ extern FT_F26Dot6 g7Tex_nDpiVert;
 
 typedef struct _S7Tex           S7Tex;
 typedef struct _S7TexGdi        S7TexGdi;
+typedef struct _S7TexShape      S7TexShape;
 typedef struct _S7TexGlyph      S7TexGlyph;
 
 typedef struct _S7StaticText    S7StaticText;
-typedef struct _S7StaticIcon    S7StaticIcon;
+typedef struct _S7Shape         S7Shape;
+typedef struct _S7SetsButton    S7SetsButton;
+typedef struct _S7Button        S7Button;
 
 /* Типы структуры S7 */
 enum {
     DT7_NULL = 0,
 
     DT7_TEX_NULL = 0x10,
+    DT7_TEX_GLYPH_A8,
+    DT7_TEX_SHAPE9_A8,
     DT7_TEX_GDI_BGR24,
     DT7_TEX_GDI_BGRA32,
-    DT7_TEX_GLYPH_A8,
+
+    DT7_SETS_BUTTON,
 
     DT7_STATIC_TEXT,
+
+    DT7_BUTTON,
 };
 
 struct _S7Tex {
@@ -36,6 +44,11 @@ struct _S7TexGdi {
     S7Tex   _tex;
     HDC     hDC;
     HBITMAP hBMP;
+};
+
+struct _S7TexShape {
+    S7Tex   _tex;
+    UINT    nX, nY;
 };
 
 struct _S7TexGlyph {
@@ -80,19 +93,44 @@ VOID A7TexDrawAlphaMap ( S7Tex *pDst, S7Tex *pSrc, UINT nX, UINT nY, UINT32 iARG
 #define D7TEXDAM_MIRROR_HORI    (0x80000000>>0)
 #define D7TEXDAM_MIRROR_VERT    (0x80000000>>1)
 
-#define D7TEXDST_ALIGN_LEFT     (0)
-#define D7TEXDST_ALIGN_RIGHT    (0x100<<0)
-#define D7TEXDST_ALIGN_CENTER   (0x100<<1)
-#define D7TEXDST_LEFT2RIGHT     (0)
-#define D7TEXDST_RIGHT2LEFT     (0x100<<2)
-#define D7TEXDST_C_MASK_        (0xff)
-#define D7TEXDST_C_ASCII        (0)
-#define D7TEXDST_C_UTF16        (0x01)
-#define D7TEXDST_C_UTF32        (0x02)
-
-FT_F26Dot6 A7TexDraw_StaticText ( S7Tex *pDst, S7StaticText *pElement );
-
 #define D7_ARGB(_a,_r,_g,_b) ( ( ( ( _a ) & 0xff ) << 030 ) | ( ( ( _r ) & 0xff ) << 020 ) | ( ( ( _g ) & 0xff ) << 010 ) | ( ( ( _b ) & 0xff ) ) )
 #define D7_RGBA(_r,_g,_b,_a) D7_ARGB ( _a,_r,_g,_b )
+
+VOID A7TexDraw_Button ( S7Tex *pDst );
+
+
+
+
+
+
+#define D7GUITEXT_ALIGN_LEFT    (0)
+#define D7GUITEXT_ALIGN_RIGHT   (0x100<<0)
+#define D7GUITEXT_ALIGN_CENTER  (0x100<<1)
+#define D7GUITEXT_LEFT2RIGHT    (0)
+#define D7GUITEXT_RIGHT2LEFT    (0x100<<2)
+#define D7GUITEXT_NO_KERNING    (0)
+#define D7GUITEXT_KERNING       (0x100<<3)
+#define D7GUITEXT_AA_MONO       (0)
+#define D7GUITEXT_AA_GRAYSCALE  (0x100<<4)
+#define D7GUITEXT_AA_LCD        (0x100<<5)
+#define D7GUITEXT_AA_LCD_INV    (0x100<<6)
+
+typedef struct _S7GuiTextSets S7GuiTextSets;
+struct _S7GuiTextSets {
+    UINT        iType;
+    FT_Face     ftFace;
+    UINT32      iARGB;
+    UINT32      iFlags;
+    FT_F26Dot6  nHeight, /* 1/64 px */
+                nOffsetX, nOffsetY,
+                nLineHeight, nLineWidth,
+                nTracking;
+    FT_Fixed    nOblique;  /* 0x10000L */
+};
+
+/* Отрисовать закруглённую форму */
+VOID A7GuiDraw_ShapeRound ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR );
+/* Отрисовать текст */
+VOID A7GuiDraw_TextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTextSets *pSets );
 
 #endif /* _H_A7GUI_H_ */
