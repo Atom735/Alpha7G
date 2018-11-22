@@ -248,8 +248,8 @@ VOID A7TexDraw_Button ( S7Tex *pDst ) {
     S7GuiTextSets sets = {
         .iType  = 0,
         .ftFace = g_ftFace,
-        .iARGB  = 0xffffffff,
-        .iFlags = D7GUITEXT_ALIGN_RIGHT,
+        .iARGB  = 0xffff0000,
+        .iFlags = 0,
         .nHeight    = 18 * 64,
         .nOffsetX   = 0,
         .nOffsetY   = 0,
@@ -258,6 +258,10 @@ VOID A7TexDraw_Button ( S7Tex *pDst ) {
         .nTracking  = 0,
         .nOblique   = 0,
     };
+    // A7GuiDraw_ShapeRoundWithRipple ( pDst, 0, 0, 1024, 1024, 0xff7fff00, 256.0f, 512, 512, 512.0f, 0x7fffffff );
+
+    // A7GuiDraw_ShapeOutlinedRound ( pDst, 128, 128, 256, 128, 0xff7f00ff, 16.0f, 8.0f );
+
     A7GuiDraw_TextWide ( pDst, 256, 128*1, L"Привет мир, дремучий!\nКак житуха?)))\n☺☻♥♦♣♠", &sets );
     sets . iFlags ^= D7GUITEXT_AA_LCD;
     A7GuiDraw_TextWide ( pDst, 256, 128*2, L"Привет мир, дремучий!\nКак житуха?)))\n☺☻♥♦♣♠", &sets );
@@ -271,11 +275,63 @@ VOID A7TexDraw_Button ( S7Tex *pDst ) {
     A7GuiDraw_TextWide ( pDst, 512, 128*2, L"Привет мир, дремучий!\nКак житуха?)))\n☺☻♥♦♣♠", &sets );
     sets . iFlags ^= D7GUITEXT_AA_LCD_INV;
     A7GuiDraw_TextWide ( pDst, 512, 128*3, L"Привет мир, дремучий!\nКак житуха?)))\n☺☻♥♦♣♠", &sets );
+
+    sets . iFlags = D7GUITEXT_AA_LCD | D7GUITEXT_ALIGN_CENTER | D7GUITEXT_NO_KERNING;
+    sets . nLineHeight = sets . nHeight / 3;
+    LPCWSTR lpsz = L"КНОПКА";
+    LPCWSTR a = lpsz;
+    A7GuiDraw_ButtonTextWide ( pDst, 256, 32, lpsz, &sets, A7GetLineWidth_TextWide ( &a, &sets ) / 32, sets . nHeight / 32, 0xffffffff, 3.5f );
+
 }
 
 
 
+/* Отрисовать закруглённую форму с эффектом Ripple */
+VOID A7GuiDraw_ShapeRoundWithRipple ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR, UINT nrX, UINT nrY, FLOAT frR, UINT32 irARGB ) {
+    BYTE * CONST pbd = pDst -> pData;
+    CONST UINT iR = ceilf ( fR );
+    CONST UINT iX = nW - iR - 1;
+    CONST UINT iY = nH - iR - 1;
+    CONST UINT cA = ( ( iARGB >> 030 ) & 0xff );
+    CONST UINT cR = ( ( iARGB >> 020 ) & 0xff );
+    CONST UINT cG = ( ( iARGB >> 010 ) & 0xff );
+    CONST UINT cB = ( ( iARGB >> 000 ) & 0xff );
 
+    CONST UINT crA = ( ( irARGB >> 030 ) & 0xff );
+    CONST UINT crR = ( ( irARGB >> 020 ) & 0xff );
+    CONST UINT crG = ( ( irARGB >> 010 ) & 0xff );
+    CONST UINT crB = ( ( irARGB >> 000 ) & 0xff );
+
+    for ( UINT iy = 0; iy < nH; ++iy ) {
+        CONST UINT idy = iy + nY;
+        if ( idy & 0x80000000U ) continue;
+        if ( idy >= pDst -> nHeight ) break;
+        for ( UINT ix = 0; ix < nW; ++ix ) {
+            CONST UINT idx = ix + nX;
+            if ( idx & 0x80000000U ) continue;
+            if ( idx >= pDst -> nWidth ) break;
+            CONST UINT id = idy * pDst -> nStride + idx * 3;
+            CONST FLOAT fx = ix < iR ? ( FLOAT ) ( ix ) - fR :
+                ix > iX ? ( FLOAT ) ( nW - ix - 1 ) - fR : 0.0f;
+            CONST FLOAT fy = iy < iR ? ( FLOAT ) ( iy ) - fR :
+                iy > iY ? ( FLOAT ) ( nH - iy - 1 ) - fR : 0.0f;
+            CONST FLOAT r = fR - sqrtf ( fx * fx + fy * fy ) + 1.0f;
+            CONST UINT  a = r > 1.0f ? cA : r > 0.0f ? r * (FLOAT) cA : 0x00;
+            pbd [ id + 0 ] = ( pbd [ id + 0 ] * ( 0xff - a ) + cB * a ) / 0xff;
+            pbd [ id + 1 ] = ( pbd [ id + 1 ] * ( 0xff - a ) + cG * a ) / 0xff;
+            pbd [ id + 2 ] = ( pbd [ id + 2 ] * ( 0xff - a ) + cR * a ) / 0xff;
+
+            CONST FLOAT frx = ( FLOAT ) ( INT ) ( ix - nrX );
+            CONST FLOAT fry = ( FLOAT ) ( INT ) ( iy - nrY );
+            CONST FLOAT rr = frR - sqrtf ( frx * frx + fry * fry ) + 1.0f;
+            CONST UINT  ar = rr > 1.0f ? crA : rr > 0.0f ? rr * (FLOAT) crA : 0x00;
+            CONST UINT  ra = r > 1.0f ? ar : r > 0.0f ? r * (FLOAT) ar : 0x00;
+            pbd [ id + 0 ] = ( pbd [ id + 0 ] * ( 0xff - ra ) + crB * ra ) / 0xff;
+            pbd [ id + 1 ] = ( pbd [ id + 1 ] * ( 0xff - ra ) + crG * ra ) / 0xff;
+            pbd [ id + 2 ] = ( pbd [ id + 2 ] * ( 0xff - ra ) + crR * ra ) / 0xff;
+        }
+    }
+}
 
 
 /* Отрисовать закруглённую форму */
@@ -285,9 +341,9 @@ VOID A7GuiDraw_ShapeRound ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UIN
     CONST UINT iX = nW - iR - 1;
     CONST UINT iY = nH - iR - 1;
     CONST UINT cA = ( ( iARGB >> 030 ) & 0xff );
-    CONST UINT cR = ( ( iARGB >> 020 ) & 0xff ) * cA / 0xff;
-    CONST UINT cG = ( ( iARGB >> 010 ) & 0xff ) * cA / 0xff;
-    CONST UINT cB = ( ( iARGB >> 000 ) & 0xff ) * cA / 0xff;
+    CONST UINT cR = ( ( iARGB >> 020 ) & 0xff );
+    CONST UINT cG = ( ( iARGB >> 010 ) & 0xff );
+    CONST UINT cB = ( ( iARGB >> 000 ) & 0xff );
     for ( UINT iy = 0; iy < nH; ++iy ) {
         CONST UINT idy = iy + nY;
         if ( idy & 0x80000000U ) continue;
@@ -311,7 +367,42 @@ VOID A7GuiDraw_ShapeRound ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UIN
     }
 }
 
-UINT A7GetWordWidth_TextWide ( LPCWSTR * pOIText, S7GuiTextSets *pSets ) {
+
+VOID A7GuiDraw_ShapeOutlinedRound ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR, FLOAT fr ) {
+    BYTE * CONST pbd = pDst -> pData;
+    CONST UINT iR = ceilf ( fR );
+    CONST UINT iX = nW - iR - 1;
+    CONST UINT iY = nH - iR - 1;
+    CONST UINT cA = ( ( iARGB >> 030 ) & 0xff );
+    CONST UINT cR = ( ( iARGB >> 020 ) & 0xff );
+    CONST UINT cG = ( ( iARGB >> 010 ) & 0xff );
+    CONST UINT cB = ( ( iARGB >> 000 ) & 0xff );
+    for ( UINT iy = 0; iy < nH; ++iy ) {
+        CONST UINT idy = iy + nY;
+        if ( idy & 0x80000000U ) continue;
+        if ( idy >= pDst -> nHeight ) break;
+        for ( UINT ix = 0; ix < nW; ++ix ) {
+            CONST UINT idx = ix + nX;
+            if ( idx & 0x80000000U ) continue;
+            if ( idx >= pDst -> nWidth ) break;
+            CONST UINT id = idy * pDst -> nStride + idx * 3;
+            CONST FLOAT fx = ix < iR ? ( FLOAT ) ( ix ) - fR :
+                ix > iX ? ( FLOAT ) ( nW - ix - 1 ) - fR : 0.0f;
+            CONST FLOAT fy = iy < iR ? ( FLOAT ) ( iy ) - fR :
+                iy > iY ? ( FLOAT ) ( nH - iy - 1 ) - fR : 0.0f;
+            CONST FLOAT q = sqrtf ( fx * fx + fy * fy );
+            CONST FLOAT r = fR - q + 1.0f;
+            CONST FLOAT R = q - fr + 1.0f;
+            CONST UINT  a = R > 1.0f ? ( r > 1.0f ? cA : r > 0.0f ? r * (FLOAT) cA : 0x00 ) : R > 0.0f ? ( r > 1.0f ? R * (FLOAT) cA : r > 0.0f ? R * r * (FLOAT) cA : 0x00 ) : 0x00;
+            pbd [ id + 0 ] = ( pbd [ id + 0 ] * ( 0xff - a ) + cB * a ) / 0xff;
+            pbd [ id + 1 ] = ( pbd [ id + 1 ] * ( 0xff - a ) + cG * a ) / 0xff;
+            pbd [ id + 2 ] = ( pbd [ id + 2 ] * ( 0xff - a ) + cR * a ) / 0xff;
+            // pbd [ id + 2 ] = fx + fy;
+        }
+    }
+}
+
+FT_F26Dot6 A7GetWordWidth_TextWide ( LPCWSTR * pOIText, S7GuiTextSets *pSets ) {
     CONST FT_Face   ftFace      = pSets -> ftFace;
     CONST BOOL      bKerning    = ( pSets -> iFlags & D7GUITEXT_KERNING ) && ( FT_HAS_KERNING ( ftFace ) );
     FT_UInt         iGlyphIndexLast = 0;
@@ -334,7 +425,7 @@ UINT A7GetWordWidth_TextWide ( LPCWSTR * pOIText, S7GuiTextSets *pSets ) {
     *pOIText = pText;
     return width;
 }
-UINT A7GetLineWidth_TextWide ( LPCWSTR * pOIText, S7GuiTextSets *pSets ) {
+FT_F26Dot6 A7GetLineWidth_TextWide ( LPCWSTR * pOIText, S7GuiTextSets *pSets ) {
     CONST FT_Face   ftFace      = pSets -> ftFace;
     CONST BOOL      bKerning    = ( pSets -> iFlags & D7GUITEXT_KERNING ) && ( FT_HAS_KERNING ( ftFace ) );
     FT_UInt         iGlyphIndexLast = 0;
@@ -362,9 +453,9 @@ UINT A7GetLineWidth_TextWide ( LPCWSTR * pOIText, S7GuiTextSets *pSets ) {
 VOID A7GuiDraw_TextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTextSets *pSets ) {
     BYTE * CONST pbd = pDst -> pData;
     CONST UINT cA = ( ( pSets -> iARGB >> 030 ) & 0xff );
-    CONST UINT cR = ( ( pSets -> iARGB >> 020 ) & 0xff ) * cA / 0xff;
-    CONST UINT cG = ( ( pSets -> iARGB >> 010 ) & 0xff ) * cA / 0xff;
-    CONST UINT cB = ( ( pSets -> iARGB >> 000 ) & 0xff ) * cA / 0xff;
+    CONST UINT cR = ( ( pSets -> iARGB >> 020 ) & 0xff );
+    CONST UINT cG = ( ( pSets -> iARGB >> 010 ) & 0xff );
+    CONST UINT cB = ( ( pSets -> iARGB >> 000 ) & 0xff );
     CONST FT_Face   ftFace      = pSets -> ftFace;
     CONST BOOL      bKerning    = ( pSets -> iFlags & D7GUITEXT_KERNING ) && ( FT_HAS_KERNING ( ftFace ) );
     CONST BOOL      bOblique    = pSets -> nOblique != 0;
@@ -376,15 +467,6 @@ VOID A7GuiDraw_TextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTex
     CONST BOOL      bAlignC     = ( pSets -> iFlags & D7GUITEXT_ALIGN_CENTER );
     FT_UInt         iGlyphIndexLast = 0;
     D7ERR_FREETYPE ( FT_Set_Char_Size, ftFace, 0, pSets -> nHeight * 72 / g7Tex_nDpiVert, g7Tex_nDpiHorz, g7Tex_nDpiVert );
-
-    {
-        LPCWSTR pWord = pText;
-        FT_F26Dot6 w = A7GetWordWidth_TextWide ( &pWord, pSets );
-        A7TexFillRect ( pDst, nX, nY, w/64, 10, 0xff007fff );
-        pWord = pText;
-        w = A7GetLineWidth_TextWide ( &pWord, pSets );
-        A7TexFillRect ( pDst, nX, nY+10, w/64, 10, 0xffff007f );
-    }
 
     FT_Vector pen = { .x = pSets -> nOffsetX, .y = - pSets -> nOffsetY, };
     VOID _newLine ( UINT i ) {
@@ -467,4 +549,12 @@ VOID A7GuiDraw_TextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTex
             }
         }
     }
+}
+
+
+
+/* Отрисовать обычную кнопку */
+VOID A7GuiDraw_ButtonTextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTextSets *pSets, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR ) {
+    A7GuiDraw_ShapeRound ( pDst, nX, nY, nW, nH, iARGB, fR );
+    A7GuiDraw_TextWide ( pDst, nX + nW / 2, nY + nH / 2, pText, pSets );
 }

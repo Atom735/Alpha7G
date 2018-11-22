@@ -98,11 +98,6 @@ VOID A7TexDrawAlphaMap ( S7Tex *pDst, S7Tex *pSrc, UINT nX, UINT nY, UINT32 iARG
 
 VOID A7TexDraw_Button ( S7Tex *pDst );
 
-
-
-
-
-
 #define D7GUITEXT_ALIGN_LEFT    (0)
 #define D7GUITEXT_ALIGN_RIGHT   (0x100<<0)
 #define D7GUITEXT_ALIGN_CENTER  (0x100<<1)
@@ -130,7 +125,19 @@ struct _S7GuiTextSets {
 
 /* Отрисовать закруглённую форму */
 VOID A7GuiDraw_ShapeRound ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR );
+VOID A7GuiDraw_ShapeOutlinedRound ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR, FLOAT fr );
+/* Отрисовать закруглённую форму с эффектом Ripple */
+VOID A7GuiDraw_ShapeRoundWithRipple ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR, UINT nrX, UINT nrY, FLOAT frR, UINT32 irARGB );
+
 /* Отрисовать текст */
 VOID A7GuiDraw_TextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTextSets *pSets );
+
+/* Получить длины слова / стоки в 1/64 px */
+FT_F26Dot6 A7GetWordWidth_TextWide ( LPCWSTR * ppInOutText, S7GuiTextSets *pSets );
+FT_F26Dot6 A7GetLineWidth_TextWide ( LPCWSTR * ppInOutText, S7GuiTextSets *pSets );
+
+/* Отрисовать обычную кнопку */
+VOID A7GuiDraw_ButtonTextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTextSets *pSets, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR );
+
 
 #endif /* _H_A7GUI_H_ */
