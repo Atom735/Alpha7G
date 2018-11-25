@@ -1,5 +1,6 @@
 
 #include <Windows.h>
+#include <WindowsX.h>
 
 #include <Assert.h>
 #include <Math.h>
@@ -15,5 +16,5 @@
 #include <JpegLib.h>
 
 #include "A7Err.h"
-#include "A7Gui.h"
+#include "A7S7.h"
 

@@ -36,7 +36,9 @@ LDFLAGS = $(addprefix -L, $(PATH_LIBS)) -ljpeg -lGDI32 -lmingw32 -lws2_32 $(PRE_
 
 FILES = a7main.c a7log.c a7err.c a7net.c a7ut.c
 FILES = \
-	A7Gui.c\
+	A7Tex.c\
+	A7Node.c\
+	A7Base.c\
 	A7Err.c\
 	A7Main.c
 

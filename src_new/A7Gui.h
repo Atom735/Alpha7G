@@ -30,21 +30,11 @@ enum {
     DT7_STATIC_TEXT,
 
     DT7_BUTTON,
+
+
+
 };
 
-struct _S7Tex {
-    UINT    iType;
-    BOOL    bAllocated;
-    UINT    nWidth, nHeight,
-            nStride;
-    BYTE   *pData;
-};
-
-struct _S7TexGdi {
-    S7Tex   _tex;
-    HDC     hDC;
-    HBITMAP hBMP;
-};
 
 struct _S7TexShape {
     S7Tex   _tex;
@@ -98,6 +88,9 @@ VOID A7TexDrawAlphaMap ( S7Tex *pDst, S7Tex *pSrc, UINT nX, UINT nY, UINT32 iARG
 
 VOID A7TexDraw_Button ( S7Tex *pDst );
 
+
+
+
 #define D7GUITEXT_ALIGN_LEFT    (0)
 #define D7GUITEXT_ALIGN_RIGHT   (0x100<<0)
 #define D7GUITEXT_ALIGN_CENTER  (0x100<<1)
@@ -123,6 +116,8 @@ struct _S7GuiTextSets {
     FT_Fixed    nOblique;  /* 0x10000L */
 };
 
+
+
 /* Отрисовать закруглённую форму */
 VOID A7GuiDraw_ShapeRound ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR );
 VOID A7GuiDraw_ShapeOutlinedRound ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR, FLOAT fr );
@@ -138,6 +133,36 @@ FT_F26Dot6 A7GetLineWidth_TextWide ( LPCWSTR * ppInOutText, S7GuiTextSets *pSets
 
 /* Отрисовать обычную кнопку */
 VOID A7GuiDraw_ButtonTextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTextSets *pSets, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR );
+
+
+
+
+
+
+/* Находится ли точка внутри формы круга, iX и iY - расстояние до центра Ripple */
+FLOAT A7GuiAlpha_PointInRipple ( FLOAT iX, FLOAT iY, FLOAT fR );
+/* Находится ли точка внутри формы округлой, iX и iY начало от TopLeft края формы */
+FLOAT A7GuiAlpha_PointInShapeRound ( FLOAT iX, FLOAT iY, FLOAT fR );
+/* iCorners: 1 - TopLeft, 2 - TopRight, 4 - BottomLeft, 8 - BottomRight */
+FLOAT A7GuiAlpha_PointInShapeRound9 ( FLOAT iX, FLOAT iY, FLOAT fR, UINT nW, UINT nH, UINT iCorners );
+
+struct _S7GuiButtonText {
+    UINT        iType;
+    LPCWSTR     pText;
+    UINT        nX, nY, nW, nH; /* px */
+};
+
+typedef struct _S7GuiTextField S7GuiTextField;
+struct _S7GuiTextField {
+    UINT        iType;
+    LPCWSTR     pLabel;
+    LPCWSTR     pInput;
+    UINT        nCursor;
+    UINT        nX, nY, nW, nH; /* px */
+};
+
+
+VOID A7GuiMdDraw_TextField ( S7Tex *pDst, S7GuiTextField *pE );
 
 
 #endif /* _H_A7GUI_H_ */

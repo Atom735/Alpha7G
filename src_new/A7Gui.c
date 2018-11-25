@@ -334,6 +334,8 @@ VOID A7GuiDraw_ShapeRoundWithRipple ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UI
 }
 
 
+
+
 /* Отрисовать закруглённую форму */
 VOID A7GuiDraw_ShapeRound ( S7Tex *pDst, UINT nX, UINT nY, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR ) {
     BYTE * CONST pbd = pDst -> pData;
@@ -557,4 +559,196 @@ VOID A7GuiDraw_TextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTex
 VOID A7GuiDraw_ButtonTextWide ( S7Tex *pDst, UINT nX, UINT nY, LPCWSTR pText, S7GuiTextSets *pSets, UINT nW, UINT nH, UINT32 iARGB, FLOAT fR ) {
     A7GuiDraw_ShapeRound ( pDst, nX, nY, nW, nH, iARGB, fR );
     A7GuiDraw_TextWide ( pDst, nX + nW / 2, nY + nH / 2, pText, pSets );
+}
+
+
+
+
+/* Находится ли точка внутри формы круга, iX и iY - расстояние до центра Ripple */
+FLOAT A7GuiAlpha_PointInRipple ( FLOAT iX, FLOAT iY, FLOAT fR ) {
+    CONST FLOAT r = fR - sqrtf ( iX * iX + iY * iY ) + 1.0f;
+    return r > 1.0f ? 1.0f : r > 0.0f ? r : 0.0f;
+}
+/* Находится ли точка внутри формы округлой, iX и iY начало от TopLeft края формы */
+FLOAT A7GuiAlpha_PointInShapeRound ( FLOAT iX, FLOAT iY, FLOAT fR ) {
+    if ( ( iX > fR ) || ( iY > fR ) ) return 0.0f;
+    CONST FLOAT fx = iX - fR;
+    CONST FLOAT fy = iY - fR;
+    CONST FLOAT r = fR - sqrtf ( fx * fx + fy * fy ) + 1.0f;
+    return r > 1.0f ? 1.0f : r > 0.0f ? r : 0.0f;
+}
+/* iCorners: 1 - TopLeft, 2 - TopRight, 4 - BottomLeft, 8 - BottomRight */
+FLOAT A7GuiAlpha_PointInShapeRound9 ( FLOAT iX, FLOAT iY, FLOAT fR, UINT nW, UINT nH, UINT iCorners ) {
+    if ( ( iX >= 0.0f ) && ( iY >= 0.0f ) && ( iX <= ( FLOAT ) ( nW - 1 ) ) && ( iY <= ( FLOAT ) ( nH - 1 ) ) ) {
+        if ( ( iCorners & 0x1 ) && ( iX < fR ) && ( iY < fR )  ) {
+            return A7GuiAlpha_PointInShapeRound ( iX, iY, fR );
+        }
+        if ( ( iCorners & 0x2 ) && ( iX > ( FLOAT ) ( nW - 1 ) - fR ) && ( iY < fR )  ) {
+            return A7GuiAlpha_PointInShapeRound ( ( FLOAT ) ( nW - 1 ) - iX, iY, fR );
+        }
+        if ( ( iCorners & 0x4 ) && ( iX < fR ) && ( iY > ( FLOAT ) ( nH - 1 ) - fR )  ) {
+            return A7GuiAlpha_PointInShapeRound ( iX, ( FLOAT ) ( nH - 1 ) - iY, fR );
+        }
+        if ( ( iCorners & 0x8 ) && ( iX > ( FLOAT ) ( nW - 1 ) - fR ) && ( iY > ( FLOAT ) ( nH - 1 ) - fR )  ) {
+            return A7GuiAlpha_PointInShapeRound ( ( FLOAT ) ( nW - 1 ) - iX, ( FLOAT ) ( nH - 1 ) - iY, fR );
+        }
+        return 1.0f;
+    }
+    return 0.0f;
+}
+
+
+
+
+VOID A7GuiMdDraw_TextField ( S7Tex *pDst, S7GuiTextField *pE ) {
+
+}
+
+
+
+/* Добавляет [pNewChild] как наследника к [pNode] */
+S7Node *A7Node_AppendChild ( S7Node *pNode, S7Node *pNewChild ) {
+    if ( pNode == NULL ) {
+        SetLastError ( ERROR_INVALID_DATA );
+        D7ERR_WINAPI ( __FUNCTION__ );
+        return NULL;
+    }
+    if ( ( pNode -> iType & 0xffff0000 ) != DT7_NODE ) {
+        SetLastError ( ERROR_INVALID_DATA );
+        D7ERR_WINAPI ( __FUNCTION__ );
+        return NULL;
+    }
+    if ( pNewChild == NULL ) {
+        SetLastError ( ERROR_INVALID_DATA );
+        D7ERR_WINAPI ( __FUNCTION__ );
+        return NULL;
+    }
+    if ( ( pNewChild -> iType & 0xffff0000 ) != DT7_NODE ) {
+        SetLastError ( ERROR_INVALID_DATA );
+        D7ERR_WINAPI ( __FUNCTION__ );
+        return NULL;
+    }
+
+    pNewChild -> pParentNode = pNode;
+    if ( pNode -> pChildLast == NULL ) {
+        pNode -> pChildLast = pNewChild;
+        pNode -> pChildFirst = pNewChild;
+    } else {
+        pNode -> pChildLast -> pSiblingNext = pNewChild;
+        pNewChild -> pSiblingPrev = pNode -> pChildLast;
+        pNode -> pChildLast = pNewChild;
+    }
+    return pNewChild;
+}
+/* Создаёт новую Ноду. Если [pNode] == NULL, то выделяет под неё место */
+S7Node *A7Node_CreateNew ( S7Node *pNode, UINT iFlags, LPCWSTR szName ) {
+
+    BOOL bAlloc = FALSE;
+    if ( pNode == NULL ) {
+        pNode = ( S7Node* ) malloc ( sizeof ( S7Node ) );
+        if ( pNode == NULL ) {
+            SetLastError ( ERROR_NOT_ENOUGH_MEMORY );
+            D7ERR_WINAPI ( malloc );
+            return NULL;
+        }
+        bAlloc = TRUE;
+    }
+    ZeroMemory ( pNode, sizeof ( S7Node ) );
+    pNode -> iType  = DT7_NODE;
+    pNode -> iFlags = bAlloc ? iFlags | D7NODE_ALLOCATED : iFlags;
+    pNode -> szName = szName;
+    return pNode;
+}
+/* Удаляет Ноду */
+VOID    A7Node_Release ( S7Node *pNode ) {
+    if ( pNode == NULL ) {
+        SetLastError ( ERROR_INVALID_DATA );
+        D7ERR_WINAPI ( __FUNCTION__ );
+        return;
+    }
+    if ( ( pNode -> iType & 0xffff0000 ) != DT7_NODE ) {
+        SetLastError ( ERROR_INVALID_DATA );
+        D7ERR_WINAPI ( __FUNCTION__ );
+        return;
+    }
+    while ( pNode -> pChildLast != NULL ) {
+        A7Node_Release ( pNode -> pChildLast );
+    }
+    if ( pNode -> pParentNode != NULL ) {
+        if ( pNode -> pParentNode -> pChildLast == pNode ) {
+            pNode -> pParentNode -> pChildLast = pNode -> pSiblingPrev;
+        }
+        if ( pNode -> pParentNode -> pChildFirst == pNode ) {
+            pNode -> pParentNode -> pChildFirst = pNode -> pSiblingNext;
+        }
+    }
+    if ( pNode -> pSiblingNext != NULL ) {
+        pNode -> pSiblingNext -> pSiblingPrev = pNode -> pSiblingPrev;
+    }
+    if ( pNode -> pSiblingPrev != NULL ) {
+        pNode -> pSiblingPrev -> pSiblingNext = pNode -> pSiblingNext;
+    }
+    if ( pNode -> iFlags & D7NODE_ALLOCATED ) {
+        free ( pNode );
+    }
+}
+
+
+VOID _Node_Ripple_rOnMouseUp ( S7Node *pThis, INT iX, INT iY, UINT iButton ) {
+    pThis -> iClockEnd      = clock ();
+}
+
+VOID _Node_Ripple_rOnPaint ( S7Node *pThis ) {
+    FLOAT a = 1.0f;
+    if ( pThis -> iClockEnd != 0 ) {
+        a = 1.0f - ( FLOAT ) ( clock () - pThis -> iClockEnd ) * 0.001f;
+        if ( a < 0.0f ) {
+            A7Node_Release ( pThis );
+            return;
+        }
+    }
+
+    FLOAT t = ( FLOAT ) ( clock () - pThis -> iClockStart ) * 0.0001f;
+    if ( t > 1.0f ) t = 1.0f;
+
+    CONST UINT nH = pThis -> pParentNode -> nH;
+    CONST UINT nW = pThis -> pParentNode -> nW;
+
+    CONST FLOAT fw = ( FLOAT ) nW * 0.5f;
+    CONST FLOAT fh = ( FLOAT ) nH * 0.5f;
+    CONST FLOAT fx = fw * t + (FLOAT) pThis -> nX * ( 1.0f - t );
+    CONST FLOAT fy = fh * t + (FLOAT) pThis -> nY * ( 1.0f - t );
+    CONST FLOAT fr = sqrtf ( fw * fw + fh * fh ) * t;
+
+    S7Tex * CONST pDst = pThis -> pTex;
+    BYTE * CONST pbd = pDst -> pData;
+
+    CONST UINT cA = ( ( pThis -> iARGB >> 030 ) & 0xff );
+    CONST UINT cR = ( ( pThis -> iARGB >> 020 ) & 0xff );
+    CONST UINT cG = ( ( pThis -> iARGB >> 010 ) & 0xff );
+    CONST UINT cB = ( ( pThis -> iARGB >> 000 ) & 0xff );
+
+    for ( UINT iy = 0; iy < nH; ++iy ) {
+        for ( UINT ix = 0; ix < nW; ++ix ) {
+            CONST UINT _id = iy * pDst -> nStride + ix * 3;
+            CONST FLOAT _x = (FLOAT) ix - fx;
+            CONST FLOAT _y = (FLOAT) iy - fy;
+            CONST UINT  _a = ( FLOAT ) cA * a * A7GuiAlpha_PointInRipple ( _x, _y, fr );
+            pbd [ _id + 0 ] = ( pbd [ _id + 0 ] * ( 0xff - _a ) + cB * _a ) / 0xff;
+            pbd [ _id + 1 ] = ( pbd [ _id + 1 ] * ( 0xff - _a ) + cG * _a ) / 0xff;
+            pbd [ _id + 2 ] = ( pbd [ _id + 2 ] * ( 0xff - _a ) + cR * _a ) / 0xff;
+        }
+    }
+}
+
+S7Node *A7Node_CreateNew_Ripple ( S7Node *pNode, UINT nX, UINT nY, S7Tex *pTex, UINT32 iARGB ) {
+    pNode = A7Node_CreateNew ( pNode, 0, L"Ripple" );
+    pNode -> iClockStart    = clock ();
+    pNode -> nX             = nX;
+    pNode -> nY             = nY;
+    pNode -> pTex           = pTex;
+    pNode -> iARGB          = iARGB;
+    pNode -> rOnMouseUp     = _Node_Ripple_rOnMouseUp;
+    pNode -> rOnPaint       = _Node_Ripple_rOnPaint;
+    return pNode;
 }
