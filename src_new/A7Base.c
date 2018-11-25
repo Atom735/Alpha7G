@@ -8,6 +8,7 @@ UINT    A7SizeOf ( UINT32 iType ) {
 
         case DT7_NODE:          return sizeof ( S7Node );
         case DT7_NODE_ROOT:     return sizeof ( S7Node_Root );
+        case DT7_NODE_RIPPLE:   return sizeof ( S7Node_Ripple );
     }
     return 0;
 }
@@ -29,6 +30,6 @@ VOID    A7Release ( S7Base *p ) {
         return;
     }
     if ( DT7_VALID_NODE ( p -> iType ) ) { A7Node_Release ( ( S7Node* ) p ); }
-    if ( DT7_VALID_TEX ( p -> iType ) ) { A7Tex_Release ( ( S7Node* ) p ); }
+    if ( DT7_VALID_TEX ( p -> iType ) ) { A7Tex_Release ( ( S7Tex* ) p ); }
     if ( p -> iFlags & DF7_ALLOCATED ) { free ( p ); }
 }

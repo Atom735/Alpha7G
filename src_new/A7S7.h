@@ -3,17 +3,17 @@
 
 
 typedef struct _S7Base S7Base;
+typedef struct _S7Tex S7Tex;
+typedef struct _S7TexGdi S7TexGdi;
 typedef struct _S7NodeVtbl S7NodeVtbl;
 typedef struct _S7Node S7Node;
 typedef struct _S7Node_Root S7Node_Root;
-typedef struct _S7Tex S7Tex;
-typedef struct _S7TexGdi S7TexGdi;
 
 
 /* Дефайны на проверку соотетсия типов */
 #define DT7_VALID_S7(_i)        ( ( _i & 0xff000000 ) == DT7_BASE )
-#define DT7_VALID_NODE(_i)      ( ( _i & 0xffff0000 ) == DT7_NODE )
 #define DT7_VALID_TEX(_i)       ( ( _i & 0xffff0000 ) == DT7_TEX )
+#define DT7_VALID_NODE(_i)      ( ( _i & 0xffff0000 ) == DT7_NODE )
 /* Дефайны на битовые поля iFlag */
 #define DF7_ALLOCATED (1<<31)
 /* Перечесление поля iType */
@@ -25,6 +25,7 @@ enum {
 
     DT7_NODE = 0xA70D0000,
     DT7_NODE_ROOT,
+    DT7_NODE_RIPPLE,
 
 };
 
@@ -100,12 +101,33 @@ S7Node *A7Node_New ( S7Node *pThis, UINT32 iType, UINT32 iFlags, S7NodeVtbl *pVt
 VOID    A7Node_Release ( S7Node *pThis );
 /* Добавляет [pNewChild] к [pThis] как последнего ребенка */
 S7Node *A7Node_AppendChild ( S7Node *pThis, S7Node *pNewChild );
+/* Добавляет [pNewChild] к [pThis] как первого ребенка */
+S7Node *A7Node_AddFirstChild ( S7Node *pThis, S7Node *pNewChild );
+
 
 struct _S7Node_Root {
-    S7Node _;
-    S7TexGdi gdi;
+    S7Node      _;
+    S7TexGdi    gdi; /* GDI BGR24, которая рисуется в клиентскую область */
 };
 S7Node_Root *A7Node_New_Root ( S7Node_Root *pThis, HWND hWnd );
+
+/* Структура настроек эффекта Ripple */
+typedef struct _S7Sets_Ripple S7Sets_Ripple;
+struct _S7Sets_Ripple {
+    UINT32      cARGB; /* Цвет эффекта */
+    FLOAT       fAnimBegin; /* Время анимции полного заполнения в мс */
+    FLOAT       fAnimEnd; /* Время анимции полного исчезновения в мс */
+};
+/* Максимальные размеры эффекта и центр, беруться от родителя. */
+typedef struct _S7Node_Ripple S7Node_Ripple;
+struct _S7Node_Ripple {
+    S7Node      _;
+    S7Sets_Ripple *pSets;
+    UINT        nX, nY; /* Позиция центра эффекта */
+    UINT        iClockBegin; /* Время начала */
+    UINT        iClockEnd; /* Время конца */
+};
+S7Node_Ripple *A7Node_New_Ripple ( S7Node_Ripple *pThis, S7Sets_Ripple *pSets, UINT nX, UINT nY );
 
 
 
