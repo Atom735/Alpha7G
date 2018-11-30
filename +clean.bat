@@ -1,1 +1,1 @@
-"mingw32-make.exe" -f Win32.mk clean
+"mingw32-make.exe" -f Win.mk clean
