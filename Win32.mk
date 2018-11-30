@@ -1,5 +1,6 @@
 .PHONY : all clean
 
+
 SDK_PATH_SDL = F:\\sdk\\SDL2-2.0.8\\i686-w64-mingw32\\
 SDK_PATH_SSL = F:\\sdk\\libressl-2.5.5-windows\\
 SDK_PATH_FREETYPE = F:\\sdk\\freetype-2.9.1-windows-binaries\\
@@ -25,7 +26,9 @@ PRE_LIBS =\
 	$(addprefix $(SDK_PATH_SSL)x86\\, libcrypto-41.lib libssl-43.lib )\
 	$(addprefix $(SDK_PATH_FREETYPE)win32\\, freetype.lib )
 
-CC = gcc.exe
+PATH_GCC = F:\\programs\\MinGW-W64\\i686-8.1.0-win32-dwarf-rt_v6-rev0\\mingw32\\bin
+
+CC = $(PATH_GCC)\\gcc.exe
 
 CPPFLAGS =\
 	$(addprefix -D, $(PRE_DEFINES))\
@@ -46,6 +49,7 @@ SOURCES = $(addprefix src/, $(FILES))
 OBJECTS = $(addsuffix .o, $(addprefix obj/, $(FILES)))
 
 TESTS =\
+	d3d9\
 	gdi\
 	gdi_jpg\
 	net_tls_getfile\
@@ -54,7 +58,7 @@ TESTS =\
 T_TESTS = $(addprefix test/, $(addsuffix .exe, $(TESTS)))
 
 all : main.exe k.exe $(T_TESTS)
-	main.exe
+	test/d3d9
 
 clean:
 	DEL /S *.dll
@@ -63,8 +67,12 @@ clean:
 	DEL /S *.a7-log
 	DEL /S *.o
 
+test/d3d9.exe : test/d3d9.c
+	$(CC) -o $@ $(CPPFLAGS) -march=pentium4 -Wall -O3 $< $(LDFLAGS) -lD3D9
+
 test/%.exe : test/%.c
 	$(CC) -o $@ $(CPPFLAGS) -march=pentium4 -Wall -O3 -g $< $(LDFLAGS)
+
 
 # libssl-43.dll libtls-15.dll
 main.exe : $(OBJECTS) libcrypto-41.dll libssl-43.dll freetype.dll

@@ -16,7 +16,7 @@
 		},
 		{
 			"name": "inc MinGW",
-			"path": "C:\\Program Files\\mingw-w64\\i686-8.1.0-posix-sjlj-rt_v6-rev0\\mingw32\\i686-w64-mingw32\\include"
+			"path": "F:\\programs\\MinGW-W64\\i686-8.1.0-posix-dwarf-rt_v6-rev0\\mingw32\\i686-w64-mingw32\\include"
 		},
 		{
 			"name": "inc SDL",
@@ -37,7 +37,11 @@
 		{
 			"name": "Jpeg-9c",
 			"path": "F:\\sdk\\jpeg-9c"
-		}
+		},
+        {
+            "name": "inc DirectX",
+            "path": "F:\\sdk\\DirectX SDK Aug 09\\Include"
+        }
 	],
 	"settings":
 	{

@@ -51,5 +51,6 @@ int main ( int argc, char const *argv[] ) {
 
 
     ReleaseDC ( hWnd, hDC );
+
     return 0;
 }
