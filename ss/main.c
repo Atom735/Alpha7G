@@ -12,6 +12,11 @@ DNS Size limits
 DNS Qtype [https://en.wikipedia.org/wiki/List_of_DNS_record_types]
     A       1       Address record          Returns a 32-bit IPv4 address
     AAAA    28      IPv6 address record     Returns a 128-bit IPv6 address
+
+DNS Cache
+    Массив смещения указателей на строки, оканчивающиеся нулем
+    Название хоста, байт где младшие 4 бита - кол во IpV4, а 4 старших бита - колво IpV6
+
 */
 UINT A7Pack_DnsQName ( UINT8 *pBuf8, LPCSTR sLabel ) {
     UINT o = 0;
@@ -51,10 +56,11 @@ UINT A7Pack_DnsStdRequest ( UINT8 *pBuf8, LPCSTR sLabel ) {
     *pBuf16 = htons ( 0 );
     UINT n = A7Pack_DnsQName ( pBuf8 + 12, sLabel );
     pBuf16 = ( UINT16* ) ( pBuf8 + 12 + n );
-    *pBuf16 = htons ( 28 ); ++pBuf16;
+    *pBuf16 = htons ( 1 ); ++pBuf16;
     *pBuf16 = htons ( 1 );
     return n + 16;
 }
+
 
 
 /* Название процедуры главного окна */
@@ -80,6 +86,38 @@ _7WinProc (
         InvalidateRect ( hWnd, NULL, FALSE );
     }
     #define _print(...) _push_text ( ); _cw [ 0 ] = swprintf ( _w, 511, __VA_ARGS__ )
+    void _print_dns_head ( UINT8 *pBuf ) {
+        UINT16 *pBuf16      = ( UINT16* ) pBuf;
+        CONST UINT ID       = ntohs ( *pBuf16 ); ++pBuf16;
+        CONST UINT FLAGS    = ntohs ( *pBuf16 ); ++pBuf16;
+        CONST UINT QD       = ntohs ( *pBuf16 ); ++pBuf16;
+        CONST UINT AN       = ntohs ( *pBuf16 ); ++pBuf16;
+        CONST UINT NS       = ntohs ( *pBuf16 ); ++pBuf16;
+        CONST UINT AR       = ntohs ( *pBuf16 ); ++pBuf16;
+        CONST UINT QR       = (FLAGS>>0xf)&0x1;
+        CONST UINT OPCODE   = (FLAGS>>0xb)&0xf;
+        CONST UINT AA       = (FLAGS>>0xa)&0x1;
+        CONST UINT TC       = (FLAGS>>0x9)&0x1;
+        CONST UINT RD       = (FLAGS>>0x8)&0x1;
+        CONST UINT RA       = (FLAGS>>0x7)&0x1;
+        CONST UINT Z        = (FLAGS>>0x4)&0x7;
+        CONST UINT RCODE    = (FLAGS>>0x0)&0xf;
+        _print ( L"DNS %hs ID = %i", ID, (FLAGS&0x8000?"response":"query") );
+        switch ( OPCODE ) {
+            case 0:
+                _print ( L"a standard query (QUERY)" );
+                break;
+            case 1:
+                _print ( L"an inverse query (IQUERY)" );
+                break;
+            case 2:
+                _print ( L"a server status request (STATUS)" );
+                break;
+            default:
+                _print ( L"UNDEFINED OPCODE = %i", OPCODE );
+        }
+        _print ( L"%hs", AA );
+    }
 
     switch ( uMsg ) {
         case WM_CREATE: {
@@ -92,7 +130,7 @@ _7WinProc (
             _dns_socket = socket ( AF_INET, SOCK_DGRAM, IPPROTO_UDP ); /* UDP for DNS */
             _print ( L"_dns_socket = %i", _dns_socket );
             /* Set socket to async non-block */
-            WSAAsyncSelect ( _dns_socket, hWnd, WM_SOCK_DNS, FD_CONNECT | FD_READ | FD_WRITE | FD_CLOSE );
+            WSAAsyncSelect ( _dns_socket, hWnd, WM_SOCK_DNS, FD_READ | FD_WRITE );
             return 0;
         }
         case WM_SOCK_DNS: {
@@ -100,15 +138,6 @@ _7WinProc (
             CONST UINT ev = LOWORD ( lParam );
             // CONST UINT er = HIWORD ( lParam );
             switch ( ev ) {
-                case FD_CONNECT: {
-                    _print ( L"FD_CONNECT" );
-                    break;
-                }
-                case FD_CLOSE: {
-                    _print ( L"FD_CLOSE" );
-                    closesocket ( s );
-                    break;
-                }
                 case FD_WRITE: {
                     _print ( L"FD_WRITE" );
                     UINT8 pBuf [ 512 ];
@@ -123,19 +152,7 @@ _7WinProc (
                     UINT8 pBuf [ 512 ];
                     UINT nBuf = recv ( s, ( VOID* ) pBuf, 512, 0 );
                     _print ( L"recved = %i", nBuf );
-                    UINT16 *pBuf16 = ( UINT16* ) pBuf;
-                    _print ( L"ID = %i", ntohs ( *pBuf16 ) ); ++pBuf16;
-                    UINT FLAGS = ntohs ( *pBuf16 ); ++pBuf16;
-                    _print ( L"FLAGS = %04x", FLAGS );
-                    _print ( L"%hs %hs",
-                        (FLAGS&0x8000?"response":"query"),
-                        ((FLAGS&0x7800)==0x1000?"STATUS":(FLAGS&0x7800)==0x0800?"IQUERY":"QUERY") );
-                    UINT QD = ntohs ( *pBuf16 ); ++pBuf16;
-                    _print ( L"QD = %i", QD );
-                    UINT AN = ntohs ( *pBuf16 ); ++pBuf16;
-                    _print ( L"AN = %i", AN );
-                    _print ( L"NS = %i", ntohs ( *pBuf16 ) ); ++pBuf16;
-                    _print ( L"AR = %i", ntohs ( *pBuf16 ) ); ++pBuf16;
+                    _print_dns_head ( pBuf );
 
                     break;
                 }
