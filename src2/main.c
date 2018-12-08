@@ -68,7 +68,7 @@ _7SysInit (
     UINT iState,
     VOID *pvCtx
 ) {
-    static CONST LPCWSTR kwClassName = L"WCN-Alpha7-Universal";
+    CONST LPCWSTR kwClassName = L"WCN-Alpha7-Universal";
     switch ( iState ) {
         case K7FS_PUSH: {
             /* Регистрация класса главного окна */
