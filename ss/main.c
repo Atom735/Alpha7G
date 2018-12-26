@@ -124,6 +124,7 @@ _7WinProc (
 
             _dns_addr.sin_family = AF_INET;
             _dns_addr.sin_addr.s_addr = inet_addr ( "8.8.8.8" ); /* Google Public DNS */
+            // _dns_addr.sin_addr.s_addr = inet_addr ( "192.168.32.2" ); /* KPFU Local DNS server */
             _dns_addr.sin_port = htons ( 53 ); /* DNS */
 
             /* create UDP DataGram Socket for DNS requests */
@@ -145,6 +146,10 @@ _7WinProc (
                     _print ( L"packed = %i", nBuf );
                     int err = sendto ( s, ( VOID* ) pBuf, nBuf, 0, ( struct sockaddr* ) &_dns_addr, sizeof ( _dns_addr ) );
                     _print ( L"sendto = %i", err );
+                    if ( err == SOCKET_ERROR ) {
+                        err = WSAGetLastError ();
+                        _print ( L"last error = %i", err );
+                    }
                     break;
                 }
                 case FD_READ: {
