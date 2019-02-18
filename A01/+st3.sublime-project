@@ -1,0 +1,22 @@
+{
+	"build_systems":
+	[
+		{
+			"cmd":
+			[
+				"$project_path\\+build.bat"
+			],
+			"name": "mingw-make"
+		}
+	],
+	"folders":
+	[
+		{
+			"path": "."
+		},
+		{
+			"name": "inc MinGW",
+			"path": "D:\\ARGilyazeev\\mingw64\\x86_64-w64-mingw32\\include"
+		}
+	]
+}
