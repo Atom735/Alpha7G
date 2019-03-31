@@ -11,16 +11,16 @@ static T_REAL * pDataLast = NULL;
 static T_REAL * pDataOld = NULL;
 
 /* Максимальное значение ошибки вычесления */
-static T_REAL fMaxError = 0.0001L;
+static T_REAL fMaxError = 0.01L;
 /* Расстояние между слоями по времени */
-static T_REAL fTimeStep = 0.01L;
+static T_REAL fTimeStep = 0.001L;
 /* Расстояние между узлами сетки */
 static T_REAL fGridStep;
 /* Краевые условия */
 static T_REAL fTempInitial = 0.0L;
-static T_REAL fTempLeft = 1.0L;
-static T_REAL fTempRight = 0.25L;
-static T_REAL fTempTop = 0.15L;
+static T_REAL fTempLeft = 0.0L;
+static T_REAL fTempRight = 1.0L;
+static T_REAL fTempTop = 0.0L;
 static T_REAL fTempBottom = 0.0L;
 
 /* Время временного слоя */
@@ -33,6 +33,7 @@ static T_REAL fConst2;
 /* Подготовка данных для вычеслений */
 static void rInit() {
     const UINT nNCW = (nNodesCount+2);
+    const UINT nNCWLE = nNCW-1;
     const UINT nNCFull = nNCW*nNCW;
 
     fGridStep = ((T_REAL)(1))/((T_REAL)(nNodesCount-1));
@@ -47,11 +48,11 @@ static void rInit() {
     /* Initial Temp */
     for ( UINT i = 0; i < nNCFull; ++i ) pDataOld[i] = pDataLast[i] = fTempInitial;
 
-    for ( UINT i = 1; i < nNCW; ++i ) {
+    for ( UINT i = 0; i < nNCWLE; ++i ) {
         /* Left Edge */
-        pDataOld[(i)*nNCW+(0)] = pDataLast[(i)*nNCW+(0)] = fTempLeft;
+        pDataOld[(i)*nNCW] = pDataLast[(i)*nNCW] = fTempLeft;
         /* Right Edge */
-        pDataOld[(i)*nNCW+(nNCW-1)] = pDataLast[(i)*nNCW+(nNCW-1)] = fTempRight;
+        pDataOld[(i)*nNCW+nNCWLE] = pDataLast[(i)*nNCW+nNCWLE] = fTempRight;
         /* Bottom Edge */
         pDataOld[(i)] = pDataLast[(i)] = fTempBottom;
         /* Top Edge */
@@ -134,7 +135,7 @@ static void rSolveStep() {
                     + pDataLast[i+nNCW] /* Top */
                 ) );
             fErr += fBuf > pDataLast[i] ? fBuf - pDataLast[i] : pDataLast[i] - fBuf;
-            if ( i%nNCW==nNCWEL ) i+=2;
+            if ( i%nNCW==nNCWEL-1 ) i+=2;
         }
     } while ( fErr > fMaxError );
 }
@@ -205,6 +206,17 @@ WndProc (
         }
     }
 
+    void _RePaintBg () {
+        for ( UINT iy = 0; iy < 4096; ++iy )
+        for ( UINT ix = 0; ix < 4096; ++ix ) {
+            const UINT j = ix+iy*4096;
+            const UINT k = (((ix/8)^(iy/8))&1)?0xaf:0x70;
+            pBuf[j*3+0]=k;
+            pBuf[j*3+1]=k;
+            pBuf[j*3+2]=k;
+        }
+    }
+
     switch ( uMsg ) {
         case WM_CREATE: {
             rInit();
@@ -225,6 +237,7 @@ WndProc (
             nScreenWidth = LOWORD(lParam);
             nScreenHeight = HIWORD(lParam);
             nScreenMin = nScreenWidth > nScreenHeight ? nScreenHeight : nScreenWidth;
+            _RePaintBg();
             return 0;
         }
         case WM_DESTROY: {
@@ -235,7 +248,6 @@ WndProc (
             return 0;
         }
         case WM_PAINT: {
-            rSolveStep();
 
             PAINTSTRUCT ps;
             HDC hDC = BeginPaint ( hWnd, &ps );
@@ -245,6 +257,7 @@ WndProc (
             EndPaint ( hWnd, &ps );
             InvalidateRect ( hWnd, NULL, FALSE );
             Sleep ( 0 );
+            rSolveStep();
             return 0;
         }
     }
