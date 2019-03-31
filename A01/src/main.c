@@ -3,44 +3,59 @@
 
 typedef float T_REAL;
 
-#define D_GRID_SIZE 128
+/* Количество узлов сетки */
+static UINT nNodesCount = 128U;
 
-static T_REAL * pArray = NULL;
-static T_REAL * pArrayOld = NULL;
-static const T_REAL fTimeStep = 0.000001L;
-static const T_REAL fGridStep = 1.0L/D_GRID_SIZE;
-static const T_REAL fTempInitial = 0.0L;
-static const T_REAL fTempLeft = 1.0L;
-static const T_REAL fTempRight = 0.25L;
-static const T_REAL fTempTop = 0.5L;
-static const T_REAL fTempBottom = 0.75L;
+/* Массивы данных температур узлов сетки для последнего временного слоя и предыдущего */
+static T_REAL * pDataLast = NULL;
+static T_REAL * pDataOld = NULL;
 
+/* Максимальное значение ошибки вычесления */
+static T_REAL fMaxError = 0.0001L;
+/* Расстояние между слоями по времени */
+static T_REAL fTimeStep = 0.01L;
+/* Расстояние между узлами сетки */
+static T_REAL fGridStep;
+/* Краевые условия */
+static T_REAL fTempInitial = 0.0L;
+static T_REAL fTempLeft = 1.0L;
+static T_REAL fTempRight = 0.25L;
+static T_REAL fTempTop = 0.15L;
+static T_REAL fTempBottom = 0.0L;
 
-static T_REAL fTime = 0;
+/* Время временного слоя */
+static T_REAL fTime;
 
+/* Константы которые помогут при расчётах */
+static T_REAL fConst1;
+static T_REAL fConst2;
 
+/* Подготовка данных для вычеслений */
+static void rInit() {
+    const UINT nNCW = (nNodesCount+2);
+    const UINT nNCFull = nNCW*nNCW;
 
+    fGridStep = ((T_REAL)(1))/((T_REAL)(nNodesCount-1));
+    fTime = 0;
 
-static void SOLV_Init() {
+    fConst1 = fGridStep*fGridStep/(fGridStep*fGridStep+4.0L*fTimeStep);
+    fConst2 = fTimeStep/(fGridStep*fGridStep+4.0L*fTimeStep);
+
+    pDataLast = (T_REAL*) malloc ( sizeof (T_REAL) * nNCFull * 2 );
+    pDataOld = pDataLast + nNCFull;
+
     /* Initial Temp */
-    for ( UINT i = 0; i < (D_GRID_SIZE+2)*(D_GRID_SIZE+2); ++i ) {
-        pArray[i] = fTempInitial;
-    }
-    /* Left Edge */
-    for ( UINT i = 0; i < D_GRID_SIZE+1; ++i ) {
-        pArray[i*(D_GRID_SIZE+2)] = fTempLeft;
-    }
-    /* Right Edge */
-    for ( UINT i = 0; i < D_GRID_SIZE+1; ++i ) {
-        pArray[i*(D_GRID_SIZE+2)+D_GRID_SIZE+1] = fTempRight;
-    }
-    /* Bottom Edge */
-    for ( UINT i = 0; i < D_GRID_SIZE+1; ++i ) {
-        pArray[i] = fTempBottom;
-    }
-    /* Top Edge */
-    for ( UINT i = 0; i < D_GRID_SIZE+1; ++i ) {
-        pArray[i+(D_GRID_SIZE+1)*(D_GRID_SIZE+2)] = fTempTop;
+    for ( UINT i = 0; i < nNCFull; ++i ) pDataOld[i] = pDataLast[i] = fTempInitial;
+
+    for ( UINT i = 1; i < nNCW; ++i ) {
+        /* Left Edge */
+        pDataOld[(i)*nNCW+(0)] = pDataLast[(i)*nNCW+(0)] = fTempLeft;
+        /* Right Edge */
+        pDataOld[(i)*nNCW+(nNCW-1)] = pDataLast[(i)*nNCW+(nNCW-1)] = fTempRight;
+        /* Bottom Edge */
+        pDataOld[(i)] = pDataLast[(i)] = fTempBottom;
+        /* Top Edge */
+        pDataOld[(nNCFull-nNCW)+(i)] = pDataLast[(nNCFull-nNCW)+(i)] = fTempTop;
     }
 }
 
@@ -92,18 +107,38 @@ static void SOLV_Init() {
         Const2 == [t/(h^2+4t)]
     This = Const1 * Old + Const2 * (Left+Right+Bottom+Top)
 */
-static const T_REAL fConst1 = fGridStep*fGridStep/(fGridStep*fGridStep+4.0L*fTimeStep);
-static const T_REAL fConst2 = fTimeStep/(fGridStep*fGridStep+4.0L*fTimeStep);
 
-static void SOLV_STEP() {
-    for ( UINT i = 0; i<D_GRID_SIZE*D_GRID_SIZE; ++i) {
-        const UINT j = i+3+D_GRID_SIZE+(2*(i/D_GRID_SIZE));
-        pArray[j] = ( fConst1 * pArray[j] ) + ( fConst2 * (
-            pArray[j-1] + pArray[j+1] +
-            pArray[j-(D_GRID_SIZE+2)] +
-            pArray[j+(D_GRID_SIZE+2)] ) );
+/* Расчитываем след временной шаг */
+static void rSolveStep() {
+    const UINT nNCW = (nNodesCount+2);
+    const UINT nNCWEL = nNCW-1;
+    const UINT nNCFull = nNCW*nNCW;
+    const UINT nNCFullM = nNCFull-nNCW;
+
+    fTime += fTimeStep;
+    /* Swap Buffers */
+    {
+        T_REAL *pBuf = pDataLast;
+        pDataLast = pDataOld;
+        pDataOld = pBuf;
     }
+    T_REAL fErr;
+    do {
+        fErr = 0;
+        for ( UINT i = nNCW+1; i < nNCFullM; ++i ) {
+            T_REAL fBuf = pDataLast[i];
+            pDataLast[i] = ( fConst1 * pDataOld[i] ) + ( fConst2 * (
+                    + pDataLast[i-1] /* Left */
+                    + pDataLast[i+1] /* Right */
+                    + pDataLast[i-nNCW] /* Bottom */
+                    + pDataLast[i+nNCW] /* Top */
+                ) );
+            fErr += fBuf > pDataLast[i] ? fBuf - pDataLast[i] : pDataLast[i] - fBuf;
+            if ( i%nNCW==nNCWEL ) i+=2;
+        }
+    } while ( fErr > fMaxError );
 }
+
 
 static LRESULT CALLBACK
 WndProc (
@@ -116,31 +151,83 @@ WndProc (
     static HDC hBackBufferDC = NULL;
     static HBITMAP hBackBuffer = NULL;
     static BYTE * pBuf = NULL;
+    static UINT nScreenWidth = 0, nScreenHeight = 0;
+    static UINT nScreenMin = 0;
+
+    void _RePaint () {
+        const UINT nNCW = (nNodesCount+2);
+        const UINT nNCFull = nNCW*nNCW;
+
+        const UINT nMul = nScreenMin / nNCW;
+
+        for ( UINT iy = 0; iy < nNCW; ++iy )
+        for ( UINT ix = 0; ix < nNCW; ++ix ) {
+            const UINT j = ix*nMul+iy*nMul*4096;
+            const T_REAL f = pDataLast[ix+iy*nNCW]*(T_REAL)6;
+            if ( f < (T_REAL)1 ) {
+                pBuf[j*3+0]=(BYTE)((f)*(T_REAL)255);
+                pBuf[j*3+1]=0x00;
+                pBuf[j*3+2]=0x00;
+            } else
+            if ( f < (T_REAL)2 ) {
+                pBuf[j*3+0]=0xff;
+                pBuf[j*3+1]=(BYTE)((f-(T_REAL)1)*(T_REAL)255);
+                pBuf[j*3+2]=0x00;
+            } else
+            if ( f < (T_REAL)3 ) {
+                pBuf[j*3+0]=(BYTE)(((T_REAL)3-f)*(T_REAL)255);
+                pBuf[j*3+1]=0xff;
+                pBuf[j*3+2]=0x00;
+            } else
+            if ( f < (T_REAL)4 ) {
+                pBuf[j*3+0]=0x00;
+                pBuf[j*3+1]=0xff;
+                pBuf[j*3+2]=(BYTE)((f-(T_REAL)3)*(T_REAL)255);
+            } else
+            if ( f < (T_REAL)5 ) {
+                pBuf[j*3+0]=0x00;
+                pBuf[j*3+1]=(BYTE)(((T_REAL)5-f)*(T_REAL)255);
+                pBuf[j*3+2]=0xff;
+            } else
+            {
+                pBuf[j*3+0]=(BYTE)((f-(T_REAL)5)*(T_REAL)255);
+                pBuf[j*3+1]=(BYTE)((f-(T_REAL)5)*(T_REAL)255);
+                pBuf[j*3+2]=0xff;
+            }
+            if ( nMul > 1 ) {
+                for ( UINT ky = 0; ky < nMul; ++ky )
+                for ( UINT kx = 0; kx < nMul; ++kx ) {
+                    pBuf[(j+kx+ky*4096)*3+0] = pBuf[j*3+0];
+                    pBuf[(j+kx+ky*4096)*3+1] = pBuf[j*3+1];
+                    pBuf[(j+kx+ky*4096)*3+2] = pBuf[j*3+2];
+                }
+            }
+        }
+    }
+
     switch ( uMsg ) {
         case WM_CREATE: {
-            pArray = (T_REAL*) malloc ( sizeof (T_REAL) * ((D_GRID_SIZE+2) * (D_GRID_SIZE+2)) );
-            pArrayOld = (T_REAL*) malloc ( sizeof (T_REAL) * ((D_GRID_SIZE+2) * (D_GRID_SIZE+2)) );
+            rInit();
             _hDC = GetWindowDC ( hWnd );
             hBackBufferDC = CreateCompatibleDC ( _hDC );
             BITMAPINFO bi;
             memset(&bi, 0, sizeof(bi));
             bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
             bi.bmiHeader.biBitCount = 24;
-            bi.bmiHeader.biWidth = D_GRID_SIZE;
-            bi.bmiHeader.biHeight = D_GRID_SIZE;
+            bi.bmiHeader.biWidth = 4096;
+            bi.bmiHeader.biHeight = -4096;
             bi.bmiHeader.biCompression = BI_RGB;
             bi.bmiHeader.biPlanes = 1;
             hBackBuffer = CreateDIBSection ( hBackBufferDC, &bi, DIB_RGB_COLORS, (void**)&pBuf, NULL, 0 );
-            SOLV_Init();
-
             return 0;
         }
         case WM_SIZE: {
+            nScreenWidth = LOWORD(lParam);
+            nScreenHeight = HIWORD(lParam);
+            nScreenMin = nScreenWidth > nScreenHeight ? nScreenHeight : nScreenWidth;
             return 0;
         }
         case WM_DESTROY: {
-            free ( pArrayOld );
-            free ( pArray );
             DeleteObject ( hBackBuffer );
             DeleteDC ( hBackBufferDC );
             ReleaseDC ( hWnd, _hDC );
@@ -148,50 +235,16 @@ WndProc (
             return 0;
         }
         case WM_PAINT: {
+            rSolveStep();
+
             PAINTSTRUCT ps;
             HDC hDC = BeginPaint ( hWnd, &ps );
             SelectObject ( hBackBufferDC, hBackBuffer );
-            for ( UINT i = 0; i < D_GRID_SIZE*D_GRID_SIZE; ++i ) {
-                const UINT j = i+3+D_GRID_SIZE+(2*(i/D_GRID_SIZE));
-                const T_REAL f = pArray[j]*(T_REAL)6;
-                if ( f < (T_REAL)1 ) {
-                    pBuf[i*3+0]=(BYTE)((f)*(T_REAL)255);
-                    pBuf[i*3+1]=0x00;
-                    pBuf[i*3+2]=0x00;
-                } else
-                if ( f < (T_REAL)2 ) {
-                    pBuf[i*3+0]=0xff;
-                    pBuf[i*3+1]=(BYTE)((f-(T_REAL)1)*(T_REAL)255);
-                    pBuf[i*3+2]=0x00;
-                } else
-                if ( f < (T_REAL)3 ) {
-                    pBuf[i*3+0]=(BYTE)(((T_REAL)3-f)*(T_REAL)255);
-                    pBuf[i*3+1]=0xff;
-                    pBuf[i*3+2]=0x00;
-                } else
-                if ( f < (T_REAL)4 ) {
-                    pBuf[i*3+0]=0x00;
-                    pBuf[i*3+1]=0xff;
-                    pBuf[i*3+2]=(BYTE)((f-(T_REAL)3)*(T_REAL)255);
-                } else
-                if ( f < (T_REAL)5 ) {
-                    pBuf[i*3+0]=0x00;
-                    pBuf[i*3+1]=(BYTE)(((T_REAL)5-f)*(T_REAL)255);
-                    pBuf[i*3+2]=0xff;
-                } else
-                if ( f < (T_REAL)6 ) {
-                    pBuf[i*3+0]=(BYTE)((f-(T_REAL)5)*(T_REAL)255);
-                    pBuf[i*3+1]=(BYTE)((f-(T_REAL)5)*(T_REAL)255);
-                    pBuf[i*3+2]=0xff;
-                }
-            }
-            for ( UINT i = 0; i < 25; ++i ) {
-                SOLV_STEP();
-            }
-            BitBlt ( hDC, 0, 0, D_GRID_SIZE, D_GRID_SIZE, hBackBufferDC, 0, 0, SRCCOPY);
+            _RePaint();
+            BitBlt ( hDC, 0, 0, nScreenWidth, nScreenHeight, hBackBufferDC, 0, 0, SRCCOPY);
             EndPaint ( hWnd, &ps );
             InvalidateRect ( hWnd, NULL, FALSE );
-            Sleep ( 1 );
+            Sleep ( 0 );
             return 0;
         }
     }
