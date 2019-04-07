@@ -1,184 +1,115 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-typedef float T_REAL;
-
+#include <math.h>
+/* Точность вычеслений */
+typedef double T_REAL;
+#define REAL_PRINT_TYPE "lf"
 /* Количество узлов сетки */
-static UINT nNodesCount = 128U;
-
+static UINT nNodesCountX = 1024U;
+static UINT nNodesCountY = 1024U;
+static UINT nNodesCountT = 1024U*1024U;
 /* Массивы данных температур узлов сетки для последнего временного слоя и предыдущего */
-static T_REAL * pDataLast = NULL;
-static T_REAL * pDataOld = NULL;
-/* Масси невязок */
-static T_REAL * pDataRes = NULL;
-
-/* Максимальное значение ошибки вычесления */
-static T_REAL fMaxError = 0.0001L;
+static T_REAL * pDataLast;
+static T_REAL * pDataOld;
+/* Максимальное значение ошибки вычесления 10^(-6) */
+static T_REAL fMaxError = 0.000001L * 0.000001L;
 /* Расстояние между слоями по времени */
-static T_REAL fTimeStep = 0.0001L;
+static T_REAL fTimeStep;
 /* Расстояние между узлами сетки */
-static T_REAL fGridStep;
+static T_REAL fGridStepX;
+static T_REAL fGridStepY;
 /* Краевые условия */
-static T_REAL fTempInitial = 0.0L;
-static T_REAL fTempLeft = 0.0L;
-static T_REAL fTempRight = 1.0L;
-static T_REAL fTempTop = 0.0L;
-static T_REAL fTempBottom = 0.0L;
-
-/* Время временного слоя */
-static T_REAL fTime;
-static UINT nTimeStep;
-
+static T_REAL fTempInitial ( T_REAL x, T_REAL y ) { return 0.0L; }
+static T_REAL fTempLeft ( T_REAL y ) { return y; }
+static T_REAL fTempRight ( T_REAL y ) { return (1.0-y); }
+static T_REAL fTempTop ( T_REAL x ) { return 0; }
+static T_REAL fTempBottom ( T_REAL x ) { return x*(1.0-x); }
+/* Отношение сторон пластины X к Y */
+static T_REAL fAspect = 1.0L;
+/* Количество узлов в памяти */
+static UINT nNCX, nNCY, nNCF, nNCM;
 /* Константы которые помогут при расчётах */
-static T_REAL fConst1;
-static T_REAL fConst2;
-
+static T_REAL fConstX, fConstY, fConstZ;
+static UINT nTimeStep;
 /* Подготовка данных для вычеслений */
-static void rInit() {
-    const UINT nNCW = (nNodesCount+2);
-    const UINT nNCWLE = nNCW-1;
-    const UINT nNCFull = nNCW*nNCW;
-
+static void rInit ( ) {
+    fGridStepX = ((T_REAL)(1)) / ((T_REAL)(nNodesCountX-1));
+    fGridStepY = ((T_REAL)(1)) / ( fAspect * ((T_REAL)(nNodesCountY-1)) );
+    fTimeStep = ((T_REAL)(1)) / ((T_REAL)(nNodesCountT-1));
+    nNCX = nNodesCountX + 2;
+    nNCY = nNodesCountY + 2;
+    nNCF = nNCX * nNCY;
+    nNCM = nNCF - nNCX;
     nTimeStep = 0;
-    fGridStep = ((T_REAL)(1))/((T_REAL)(nNodesCount-1));
-    fTime = 0;
-
-
-    pDataRes = (T_REAL*) malloc ( sizeof (T_REAL) * nNCFull * 3 );
-    pDataLast = pDataRes + nNCFull;
-    pDataOld = pDataLast + nNCFull;
-
+    pDataLast = (T_REAL*) malloc ( sizeof (T_REAL) * nNCF * 2 );
+    pDataOld = pDataLast + nNCF;
     /* Initial Temp */
-    for ( UINT i = 0; i < nNCFull; ++i ) pDataOld[i] = pDataLast[i] = fTempInitial;
-
-    for ( UINT i = 0; i < nNCWLE; ++i ) {
-        /* Left Edge */
-        pDataOld[(i)*nNCW] = pDataLast[(i)*nNCW] = fTempLeft;
-        /* Right Edge */
-        pDataOld[(i)*nNCW+nNCWLE] = pDataLast[(i)*nNCW+nNCWLE] = fTempRight;
-        /* Bottom Edge */
-        pDataOld[(i)] = pDataLast[(i)] = fTempBottom;
-        /* Top Edge */
-        pDataOld[(nNCFull-nNCW)+(i)] = pDataLast[(nNCFull-nNCW)+(i)] = fTempTop;
-    }
-}
-
-/*
-    T[ k - индекс по временному слою, i,j - индексы по пространственной сетке ]
-    T[0,i,j] - начальные значения
-    T[k,0,j] - левая грань
-    T[k,Ni,j] - правая грань
-    T[k,i,0] - нижняя грань
-    T[k,i,Nj] - верхняя грань
-
- == Дискретный аналог исходного уравнения:
-    ( T[k+1,*,*] - T[k,*,*] ) / t =
-        ( T[*,i-1,j] - 2 T[*,i,j] + T[*,i+1,j] ) / h^2 +
-        ( T[*,i,j-1] - 2 T[*,i,j] + T[*,i,j+1] ) / h^2
-
- == Неявная схема:
-    ( T[k+1,i,j] - T[k,i,j] ) / t =
-        ( T[k+1,i-1,j] - 2 T[k+1,i,j] + T[k+1,i+1,j] ) / h^2 +
-        ( T[k+1,i,j-1] - 2 T[k+1,i,j] + T[k+1,i,j+1] ) / h^2
-    >> изменим немного индекс k
-    ( T[k,i,j] - T[k-1,i,j] ) / t =
-        ( T[k,i-1,j] - 2 T[k,i,j] + T[k,i+1,j] ) / h^2 +
-        ( T[k,i,j-1] - 2 T[k,i,j] + T[k,i,j+1] ) / h^2
-    >> T[k,i,j] - расчитывыемый узел
-    >> T[k-1,i,j] - расчитанное значения в узле в пред момент времени - константа
-    >> Умножим обе части уравнения на t и h
-    h^2 * ( T[k,i,j] - T[k-1,i,j] ) =
-        t * ( T[k,i-1,j] - 2 T[k,i,j] + T[k,i+1,j] + T[k,i,j-1] - 2 T[k,i,j] + T[k,i,j+1] )
-    >> Вынесем неизвестные части влево, а известные вправо
-    h^2 T[k,i,j] + 2t T[k,i,j] + 2t T[k,i,j]
-        -t * ( T[k,i-1,j] + T[k,i+1,j] + T[k,i,j-1] + T[k,i,j+1] )
-        = h^2 T[k-1,i,j]
-    >> Для наглядности сделаем замену
-        T[k,i,j] == This
-        T[k-1,i,j] == Old
-        T[k,i-1,j] == Left
-        T[k,i+1,j] == Right
-        T[k,i,j-1] == Bottom
-        T[k,i,j+1] == Top
-    (h^2+4t)*This - t*(Left+Right+Bottom+Top) = h^2 * Old
-    >> Считаем итерационнм методом, считая что нам известны:
-        Left, Bottom - из пред расчётов или краевых условий
-        Old - из пред временногослоя
-        Bottom, Top - известны из пред итерации
-    This = [h^2/(h^2+4t)] * Old + [t/(h^2+4t)] * (Left+Right+Bottom+Top)
-    >> Заменим константы
-        Const1 == [h^2/(h^2+4t)]
-        Const2 == [t/(h^2+4t)]
-    This = Const1 * Old + Const2 * (Left+Right+Bottom+Top)
-*/
-
-/* Получение невязки */
-static T_REAL rGetResidual() {
-    const UINT nNCW = (nNodesCount+2);
-    const UINT nNCWEL = nNCW-1;
-    const UINT nNCFull = nNCW*nNCW;
-    const UINT nNCFullM = nNCFull-nNCW;
-    T_REAL fErr = 0;
-    fConst1 = (fGridStep*fGridStep+4.0L*fTimeStep)/(fGridStep*fGridStep);
-    for ( UINT i = nNCW+1; i < nNCFullM; ++i ) {
-            T_REAL fBuf = ( pDataLast[i] - ( fConst2 * (
-                + pDataLast[i-1] /* Left */
-                + pDataLast[i+1] /* Right */
-                + pDataLast[i-nNCW] /* Bottom */
-                + pDataLast[i+nNCW] /* Top */
-            ) ) ) * fConst1 - pDataOld[i];
-        fBuf = fBuf > 0 ? fBuf : -fBuf;
-        if ( fErr < fBuf ) fErr = fBuf;
-        // fErr += fBuf;// > 0 ? fBuf : -fBuf;
-        if ( i%nNCW==nNCWEL-1 ) i+=2;
-    }
-    return fErr;
-}
-
-/* Расчитываем след временной шаг */
-static void rSolveStep() {
-    const UINT nNCW = (nNodesCount+2);
-    const UINT nNCWEL = nNCW-1;
-    const UINT nNCFull = nNCW*nNCW;
-    const UINT nNCFullM = nNCFull-nNCW;
-
-    fTime += fTimeStep;
-    fConst1 = fGridStep*fGridStep/(fGridStep*fGridStep+4.0L*fTimeStep);
-    fConst2 = fTimeStep/(fGridStep*fGridStep+4.0L*fTimeStep);
-
-    // fTimeStep *= 1.01;
-    // fMaxError *= 0.99;
-    // if ( fTimeStep > 10.0 ) return;
-
-    /* Swap Buffers */
     {
-        T_REAL *pBuf = pDataLast;
-        pDataLast = pDataOld;
-        pDataOld = pBuf;
+        T_REAL *pD1 = pDataLast, *pD2;
+        for ( UINT j = 0; j < nNCY; ++j )
+        for ( UINT i = 0; i < nNCX; ++i ) {
+            *pD1 = fTempInitial ( i*fGridStepX, j*fGridStepY ); ++pD1;
+        }
+        pD1 = pDataLast; pD2 = pDataLast + (nNCY-1)*nNCX;
+        for ( UINT i = 0; i < nNCX; ++i ) {
+            *pD1 = fTempBottom ( i*fGridStepX ); ++pD1;
+            *pD2 = fTempTop ( i*fGridStepX ); ++pD2;
+        }
+        pD1 = pDataLast; pD2 = pDataLast + (nNCX-1);
+        for ( UINT j = 0; j < nNCY; ++j ) {
+            *pD1 = fTempLeft ( j*fGridStepY ); pD1+=nNCX;
+            *pD2 = fTempRight ( j*fGridStepY ); pD2+=nNCX;
+        }
+        memcpy ( pDataOld, pDataLast, sizeof (T_REAL) * nNCF );
     }
+    fConstX = ((T_REAL)(1)) / ( fGridStepX * fGridStepX );
+    fConstY = ( fAspect * fAspect ) / ( fGridStepY * fGridStepY );
+    fConstZ = (((T_REAL)(1)) / fTimeStep ) + (((T_REAL)(2)) * ( fConstX + fConstY ));
+    fConstX /= fConstZ;
+    fConstY /= fConstZ;
+    fConstZ = ((T_REAL)(1)) / ( fTimeStep * fConstZ );
+}
+
+
+static T_REAL fDeltaNorma;
+/* Расчёт временного слоя */
+static void rSolveStep ( HDC hDC ) {
+    /* Swap Buffers */
+    { T_REAL *pBuf = pDataLast; pDataLast = pDataOld; pDataOld = pBuf; }
     T_REAL fErr;
+    T_REAL fBuf;
     do {
         fErr = 0;
-        for ( UINT i = nNCW+1; i < nNCFullM; ++i ) {
-            T_REAL fBuf = pDataLast[i];
-            pDataLast[i] = ( fConst1 * pDataOld[i] ) + ( fConst2 * (
-                    + pDataLast[i-1] /* Left */
-                    + pDataLast[i+1] /* Right */
-                    + pDataLast[i-nNCW] /* Bottom */
-                    + pDataLast[i+nNCW] /* Top */
+        for ( UINT ij = nNCX+1; ij < nNCM; ++ij ) {
+            fBuf = pDataLast[ij];
+            pDataLast[ij] = ( fConstZ * pDataOld[ij] ) +
+                ( fConstX * (
+                    + pDataLast[ij-1] /* Left */
+                    + pDataLast[ij+1] /* Right */
+                ) + fConstY * (
+                    + pDataLast[ij-nNCX] /* Bottom */
+                    + pDataLast[ij+nNCX] /* Top */
                 ) );
-            fErr += fBuf > pDataLast[i] ? fBuf - pDataLast[i] : pDataLast[i] - fBuf;
-            if ( i%nNCW==nNCWEL-1 ) i+=2;
+            fBuf -= pDataLast[ij];
+            fErr += fBuf * fBuf;
+            if ( ij%nNCX==nNodesCountX ) ij+=2;
         }
+        CHAR pBuf[512];
+        TextOutA ( hDC, 0, 16, pBuf, sprintf ( pBuf, "fError: %.13" REAL_PRINT_TYPE, fErr ) );
+        Sleep ( 0 );
     } while ( fErr > fMaxError );
 
-    pDataRes [ nTimeStep ] = rGetResidual();
-    ++nTimeStep;
+    fDeltaNorma = 0;
+    for ( UINT ij = nNCX+1; ij < nNCM; ++ij ) {
+        fBuf = pDataLast[ij] - pDataOld[ij];
+        fDeltaNorma += fBuf * fBuf;
+        if ( ij%nNCX==nNodesCountX ) ij+=2;
+    }
 }
 
 
-
+#define D_BMP_WIDTH 4096
 
 static LRESULT CALLBACK
 WndProc (
@@ -193,19 +124,12 @@ WndProc (
     static BYTE * pBuf = NULL;
     static UINT nScreenWidth = 0, nScreenHeight = 0;
     static UINT nScreenMin = 0;
-
     void _RePaint () {
-        const UINT nNCW = (nNodesCount+2);
-        const UINT nNCFull = nNCW*nNCW;
-
-        const UINT nMul = nScreenMin / nNCW;
-
-
-
-        for ( UINT iy = 0; iy < nNCW; ++iy )
-        for ( UINT ix = 0; ix < nNCW; ++ix ) {
-            const UINT j = ix*nMul+iy*nMul*4096;
-            const T_REAL f = pDataLast[ix+iy*nNCW]*(T_REAL)6;
+        const UINT nMul = nScreenMin > nNCX ? nScreenMin / nNCX : 1;
+        for ( UINT iy = 0; iy < nNCY; ++iy )
+        for ( UINT ix = 0; ix < nNCX; ++ix ) {
+            const UINT j = ix*nMul+iy*nMul*D_BMP_WIDTH;
+            const T_REAL f = pDataLast[ix+iy*nNCX]*(T_REAL)6;
             if ( f < (T_REAL)1 ) {
                 pBuf[j*3+0]=(BYTE)((f)*(T_REAL)255);
                 pBuf[j*3+1]=0x00;
@@ -239,32 +163,23 @@ WndProc (
             if ( nMul > 1 ) {
                 for ( UINT ky = 0; ky < nMul; ++ky )
                 for ( UINT kx = 0; kx < nMul; ++kx ) {
-                    pBuf[(j+kx+ky*4096)*3+0] = pBuf[j*3+0];
-                    pBuf[(j+kx+ky*4096)*3+1] = pBuf[j*3+1];
-                    pBuf[(j+kx+ky*4096)*3+2] = pBuf[j*3+2];
+                    const UINT _ = (j+kx+ky*D_BMP_WIDTH)*3;
+                    pBuf[_+0] = pBuf[j*3+0];
+                    pBuf[_+1] = pBuf[j*3+1];
+                    pBuf[_+2] = pBuf[j*3+2];
                 }
             }
-        }
-
-        for ( UINT ix = 0; ix < nScreenWidth; ++ix ) {
-            UINT nH = ( nScreenHeight * (pDataRes[ix]/pDataRes[0]*0.5) );
-            for ( UINT iy = 0; iy < nH; ++iy ) {
-                pBuf[(ix+iy*4096)*3+0]^=0xff;
-                pBuf[(ix+iy*4096)*3+1]^=0x80;
-                pBuf[(ix+iy*4096)*3+2]^=0x7f;
-            }
-
         }
     }
 
     void _RePaintBg () {
-        for ( UINT iy = 0; iy < 4096; ++iy )
-        for ( UINT ix = 0; ix < 4096; ++ix ) {
-            const UINT j = ix+iy*4096;
+        for ( UINT iy = 0; iy < D_BMP_WIDTH; ++iy )
+        for ( UINT ix = 0; ix < D_BMP_WIDTH; ++ix ) {
+            const UINT _ = (ix+iy*D_BMP_WIDTH)*3;
             const UINT k = (((ix/8)^(iy/8))&1)?0xaf:0x70;
-            pBuf[j*3+0]=k;
-            pBuf[j*3+1]=k;
-            pBuf[j*3+2]=k;
+            pBuf[_+0]=k;
+            pBuf[_+1]=k;
+            pBuf[_+2]=k;
         }
     }
 
@@ -277,8 +192,8 @@ WndProc (
             memset(&bi, 0, sizeof(bi));
             bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
             bi.bmiHeader.biBitCount = 24;
-            bi.bmiHeader.biWidth = 4096;
-            bi.bmiHeader.biHeight = -4096;
+            bi.bmiHeader.biWidth = D_BMP_WIDTH;
+            bi.bmiHeader.biHeight = -D_BMP_WIDTH;
             bi.bmiHeader.biCompression = BI_RGB;
             bi.bmiHeader.biPlanes = 1;
             hBackBuffer = CreateDIBSection ( hBackBufferDC, &bi, DIB_RGB_COLORS, (void**)&pBuf, NULL, 0 );
@@ -306,11 +221,14 @@ WndProc (
             _RePaint();
             BitBlt ( hDC, 0, 0, nScreenWidth, nScreenHeight, hBackBufferDC, 0, 0, SRCCOPY);
             CHAR pBuf[512];
-            TextOutA ( hDC, 0, 0, pBuf, sprintf ( pBuf, "Res: %f", pDataRes[nTimeStep-1] ) );
+            TextOutA ( hDC, 0, 0, pBuf, sprintf ( pBuf, "fDeltaNorma: %.13" REAL_PRINT_TYPE, fDeltaNorma ) );
+            TextOutA ( hDC, 0, 32, pBuf, sprintf ( pBuf, "nTimeStep: %d", nTimeStep ) );
+            TextOutA ( hDC, 0, 48, pBuf, sprintf ( pBuf, "fTime: %.13" REAL_PRINT_TYPE, nTimeStep*fTimeStep ) );
+            ++nTimeStep;
+            rSolveStep ( hDC );
             EndPaint ( hWnd, &ps );
             InvalidateRect ( hWnd, NULL, FALSE );
             Sleep ( 0 );
-            rSolveStep();
             return 0;
         }
     }
@@ -342,7 +260,7 @@ INT APIENTRY wWinMain (
         RegisterClassExW ( &wc );
     }
     CreateWindowExW ( 0, L"SOME_CLASS_NAME", NULL, WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL );
+        CW_USEDEFAULT, CW_USEDEFAULT, 9999, 9999, NULL, NULL, hInstance, NULL );
 
     MSG msg = { };
     while ( GetMessage ( &msg, NULL, 0, 0 ) ) {
