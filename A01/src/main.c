@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef float T_REAL;
 
@@ -9,11 +10,13 @@ static UINT nNodesCount = 128U;
 /* Массивы данных температур узлов сетки для последнего временного слоя и предыдущего */
 static T_REAL * pDataLast = NULL;
 static T_REAL * pDataOld = NULL;
+/* Масси невязок */
+static T_REAL * pDataRes = NULL;
 
 /* Максимальное значение ошибки вычесления */
-static T_REAL fMaxError = 0.01L;
+static T_REAL fMaxError = 0.0001L;
 /* Расстояние между слоями по времени */
-static T_REAL fTimeStep = 0.001L;
+static T_REAL fTimeStep = 0.0001L;
 /* Расстояние между узлами сетки */
 static T_REAL fGridStep;
 /* Краевые условия */
@@ -25,6 +28,7 @@ static T_REAL fTempBottom = 0.0L;
 
 /* Время временного слоя */
 static T_REAL fTime;
+static UINT nTimeStep;
 
 /* Константы которые помогут при расчётах */
 static T_REAL fConst1;
@@ -36,13 +40,13 @@ static void rInit() {
     const UINT nNCWLE = nNCW-1;
     const UINT nNCFull = nNCW*nNCW;
 
+    nTimeStep = 0;
     fGridStep = ((T_REAL)(1))/((T_REAL)(nNodesCount-1));
     fTime = 0;
 
-    fConst1 = fGridStep*fGridStep/(fGridStep*fGridStep+4.0L*fTimeStep);
-    fConst2 = fTimeStep/(fGridStep*fGridStep+4.0L*fTimeStep);
 
-    pDataLast = (T_REAL*) malloc ( sizeof (T_REAL) * nNCFull * 2 );
+    pDataRes = (T_REAL*) malloc ( sizeof (T_REAL) * nNCFull * 3 );
+    pDataLast = pDataRes + nNCFull;
     pDataOld = pDataLast + nNCFull;
 
     /* Initial Temp */
@@ -109,6 +113,29 @@ static void rInit() {
     This = Const1 * Old + Const2 * (Left+Right+Bottom+Top)
 */
 
+/* Получение невязки */
+static T_REAL rGetResidual() {
+    const UINT nNCW = (nNodesCount+2);
+    const UINT nNCWEL = nNCW-1;
+    const UINT nNCFull = nNCW*nNCW;
+    const UINT nNCFullM = nNCFull-nNCW;
+    T_REAL fErr = 0;
+    fConst1 = (fGridStep*fGridStep+4.0L*fTimeStep)/(fGridStep*fGridStep);
+    for ( UINT i = nNCW+1; i < nNCFullM; ++i ) {
+            T_REAL fBuf = ( pDataLast[i] - ( fConst2 * (
+                + pDataLast[i-1] /* Left */
+                + pDataLast[i+1] /* Right */
+                + pDataLast[i-nNCW] /* Bottom */
+                + pDataLast[i+nNCW] /* Top */
+            ) ) ) * fConst1 - pDataOld[i];
+        fBuf = fBuf > 0 ? fBuf : -fBuf;
+        if ( fErr < fBuf ) fErr = fBuf;
+        // fErr += fBuf;// > 0 ? fBuf : -fBuf;
+        if ( i%nNCW==nNCWEL-1 ) i+=2;
+    }
+    return fErr;
+}
+
 /* Расчитываем след временной шаг */
 static void rSolveStep() {
     const UINT nNCW = (nNodesCount+2);
@@ -117,6 +144,13 @@ static void rSolveStep() {
     const UINT nNCFullM = nNCFull-nNCW;
 
     fTime += fTimeStep;
+    fConst1 = fGridStep*fGridStep/(fGridStep*fGridStep+4.0L*fTimeStep);
+    fConst2 = fTimeStep/(fGridStep*fGridStep+4.0L*fTimeStep);
+
+    // fTimeStep *= 1.01;
+    // fMaxError *= 0.99;
+    // if ( fTimeStep > 10.0 ) return;
+
     /* Swap Buffers */
     {
         T_REAL *pBuf = pDataLast;
@@ -138,7 +172,12 @@ static void rSolveStep() {
             if ( i%nNCW==nNCWEL-1 ) i+=2;
         }
     } while ( fErr > fMaxError );
+
+    pDataRes [ nTimeStep ] = rGetResidual();
+    ++nTimeStep;
 }
+
+
 
 
 static LRESULT CALLBACK
@@ -160,6 +199,8 @@ WndProc (
         const UINT nNCFull = nNCW*nNCW;
 
         const UINT nMul = nScreenMin / nNCW;
+
+
 
         for ( UINT iy = 0; iy < nNCW; ++iy )
         for ( UINT ix = 0; ix < nNCW; ++ix ) {
@@ -203,6 +244,16 @@ WndProc (
                     pBuf[(j+kx+ky*4096)*3+2] = pBuf[j*3+2];
                 }
             }
+        }
+
+        for ( UINT ix = 0; ix < nScreenWidth; ++ix ) {
+            UINT nH = ( nScreenHeight * (pDataRes[ix]/pDataRes[0]*0.5) );
+            for ( UINT iy = 0; iy < nH; ++iy ) {
+                pBuf[(ix+iy*4096)*3+0]^=0xff;
+                pBuf[(ix+iy*4096)*3+1]^=0x80;
+                pBuf[(ix+iy*4096)*3+2]^=0x7f;
+            }
+
         }
     }
 
@@ -254,6 +305,8 @@ WndProc (
             SelectObject ( hBackBufferDC, hBackBuffer );
             _RePaint();
             BitBlt ( hDC, 0, 0, nScreenWidth, nScreenHeight, hBackBufferDC, 0, 0, SRCCOPY);
+            CHAR pBuf[512];
+            TextOutA ( hDC, 0, 0, pBuf, sprintf ( pBuf, "Res: %f", pDataRes[nTimeStep-1] ) );
             EndPaint ( hWnd, &ps );
             InvalidateRect ( hWnd, NULL, FALSE );
             Sleep ( 0 );
