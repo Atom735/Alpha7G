@@ -1,13 +1,19 @@
+/* CodePage: UTF-8 */
 #include <stdlib.h>
 #include <stdio.h>
 
 typedef float T_REAL;
+
+
+
+
+
 #if 0
 #define R_STR_TO_UL wcstoul
-#define R_STR_TO_LD wcstold 
+#define R_STR_TO_LD wcstold
 #else
 #define R_STR_TO_UL strtoul
-#define R_STR_TO_LD strtold 
+#define R_STR_TO_LD strtold
 #endif
 
 #define DF_REAL_OUT "%f"
@@ -21,7 +27,7 @@ nTimeSet = 1000;
 pF = mopen ( szFNameTxt, "rb" );
 [ n, nGridSize, nTimeSteps, fTimeStep ] = mfscanf ( pF, "%u%u%f" );
 [ n, fTempInitial, fTempBottom, fTempLeft, fTempRight, fTempTop ] = mfscanf ( pF, "%f%f%f%f%f" );
-mclose ( pF ); 
+mclose ( pF );
 pF = mopen ( szFNameBin, "rb" );
 xData = mget( nGridSize*nGridSize*nTimeSteps, "f", pF );
 nLine = 0:1/(nGridSize-1):1;
@@ -66,16 +72,16 @@ int main ( int argc, char const *argv[] ) {
     unsigned nGridSizeFull = nGridSizeWidth * nGridSizeWidth;
     pThis = (T_REAL*) malloc ( sizeof (T_REAL) * nGridSizeFull );
     /* Initial Temp */
-    for ( unsigned i = 0; i < nGridSizeFull; ++i ) 
+    for ( unsigned i = 0; i < nGridSizeFull; ++i )
         pThis [i] = fTempInitial;
     /* Bottom Edge */
     for ( unsigned i = 0; i < nGridSizeWidth; ++i )
         pThis [i] = fTempBottom;
     /* Left Edge */
-    for ( unsigned i = 0; i < nGridSizeWidth; ++i ) 
+    for ( unsigned i = 0; i < nGridSizeWidth; ++i )
         pThis [i*nGridSizeWidth] = fTempLeft;
     /* Right Edge */
-    for ( unsigned i = 0; i < nGridSizeWidth; ++i ) 
+    for ( unsigned i = 0; i < nGridSizeWidth; ++i )
         pThis [i*nGridSizeWidth+nGridSizeWidth-1] = fTempRight;
     /* Top Edge */
     for ( unsigned i = 0; i < nGridSizeWidth; ++i )
@@ -150,13 +156,13 @@ int main ( int argc, char const *argv[] ) {
             fprintf ( pF, " " DF_REAL_OUT, pThis[j] );
         }
         fprintf ( pF, "\n\n" );
-        printf("%u/%u\n", k+1, nTimeSteps );        
+        printf("%u/%u\n", k+1, nTimeSteps );
         for ( unsigned k = 0; k < nGridSize; ++k ) {
             fwrite ( pThis+nGridSizeWidth+1+k*nGridSizeWidth, sizeof ( T_REAL ), nGridSize, pFBin );
         }
     }
 
-    /* 
+    /*
         End
     */
     fclose ( pF );

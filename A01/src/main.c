@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
 /* Точность вычеслений */
 typedef double T_REAL;
 #define REAL_PRINT_TYPE "lf"
 /* Количество узлов сетки */
-static UINT nNodesCountX = 1024U;
-static UINT nNodesCountY = 1024U;
-static UINT nNodesCountT = 1024U*1024U;
+static UINT nNodesCountX = 128U;
+static UINT nNodesCountY = 128U;
+static UINT nNodesCountT = 4U;
 /* Массивы данных температур узлов сетки для последнего временного слоя и предыдущего */
 static T_REAL * pDataLast;
 static T_REAL * pDataOld;
@@ -20,11 +21,11 @@ static T_REAL fTimeStep;
 static T_REAL fGridStepX;
 static T_REAL fGridStepY;
 /* Краевые условия */
-static T_REAL fTempInitial ( T_REAL x, T_REAL y ) { return 0.0L; }
-static T_REAL fTempLeft ( T_REAL y ) { return y; }
-static T_REAL fTempRight ( T_REAL y ) { return (1.0-y); }
-static T_REAL fTempTop ( T_REAL x ) { return 0; }
-static T_REAL fTempBottom ( T_REAL x ) { return x*(1.0-x); }
+static T_REAL fTempInitial ( T_REAL x, T_REAL y ) { return 0.0; }
+static T_REAL fTempLeft ( T_REAL y ) { return 0.0; }
+static T_REAL fTempRight ( T_REAL y ) { return 0.0; }
+static T_REAL fTempTop ( T_REAL x ) { return sin(M_PI*x); }
+static T_REAL fTempBottom ( T_REAL x ) { return 0.0; }
 /* Отношение сторон пластины X к Y */
 static T_REAL fAspect = 1.0L;
 /* Количество узлов в памяти */
@@ -73,6 +74,7 @@ static void rInit ( ) {
 
 
 static T_REAL fDeltaNorma;
+static T_REAL fDeltaAbs;
 /* Расчёт временного слоя */
 static void rSolveStep ( HDC hDC ) {
     /* Swap Buffers */
@@ -106,8 +108,56 @@ static void rSolveStep ( HDC hDC ) {
         fDeltaNorma += fBuf * fBuf;
         if ( ij%nNCX==nNodesCountX ) ij+=2;
     }
+
+    fDeltaAbs = 0;
+    for ( UINT ij = nNCX+1; ij < nNCM; ++ij ) {
+        T_REAL x = (ij%nNCX)/(T_REAL)(nNCX-1);
+        T_REAL y = (ij/nNCX)/(T_REAL)(nNCY-1);
+        fBuf = (exp(M_PI-M_PI*y)*(-1+exp(2*M_PI*y))/(-1+exp(2*M_PI))*sin(M_PI*x));
+        fBuf -= pDataLast[ij];
+        fDeltaAbs += fBuf * fBuf;
+        if ( ij%nNCX==nNodesCountX ) ij+=2;
+    }
 }
 
+
+
+/*
+fd = mopen ( "F:\projects\Alpha7G-master\A01\data_128x128_4__1.bin", 'rb' );
+data = matrix ( mget ( 128*128, 'd', fd ), 128, 128 );
+data_x = 1:128;
+clf()
+gcf().color_map = jetcolormap ( 64 );
+colorbar (0,1)
+Sgrayplot ( data_x, data_x, data, strf="041" )
+
+fd = mopen ( "F:\projects\Alpha7G-master\A01\data_128x128_4__33.bin", 'rb' );
+data = matrix ( mget ( 128*128, 'd', fd ), 128, 128 );
+data_x = 1:128;
+clf()
+gcf().color_map = jetcolormap ( 64 );
+colorbar (0,1)
+Sgrayplot ( data_x, data_x, data, strf="041" )
+
+fd = mopen ( "F:\projects\Alpha7G-master\A01\data_128x128__end.bin", 'rb' );
+data_end = matrix ( mget ( 128*128, 'd', fd ), 128, 128 );
+data_delta = data_end - data;
+clf()
+gcf().color_map = jetcolormap ( 64 );
+colorbar (0,1)
+Sgrayplot ( data_x, data_x, data_delta, strf="041" )
+
+contour2d (  data_x, data_x, data_delta, 10 )
+
+*/
+static void rSolveSave () {
+    CHAR f_name[512];
+    sprintf ( f_name, "data_%ux%u_%u__%u.bin", nNodesCountX, nNodesCountY, nNodesCountT, nTimeStep );
+    FILE *pF = fopen ( f_name, "wb" );
+    for ( UINT i = 1; i < nNCY-1; ++i )
+        fwrite ( pDataLast+(i*nNCX+1), sizeof ( T_REAL ), nNodesCountX, pF );
+    fclose ( pF );
+}
 
 #define D_BMP_WIDTH 4096
 
@@ -224,8 +274,10 @@ WndProc (
             TextOutA ( hDC, 0, 0, pBuf, sprintf ( pBuf, "fDeltaNorma: %.13" REAL_PRINT_TYPE, fDeltaNorma ) );
             TextOutA ( hDC, 0, 32, pBuf, sprintf ( pBuf, "nTimeStep: %d", nTimeStep ) );
             TextOutA ( hDC, 0, 48, pBuf, sprintf ( pBuf, "fTime: %.13" REAL_PRINT_TYPE, nTimeStep*fTimeStep ) );
+            TextOutA ( hDC, 0, 64, pBuf, sprintf ( pBuf, "fDeltaAbs: %.13" REAL_PRINT_TYPE, fDeltaAbs ) );
             ++nTimeStep;
             rSolveStep ( hDC );
+            rSolveSave();
             EndPaint ( hWnd, &ps );
             InvalidateRect ( hWnd, NULL, FALSE );
             Sleep ( 0 );
@@ -262,6 +314,21 @@ INT APIENTRY wWinMain (
     CreateWindowExW ( 0, L"SOME_CLASS_NAME", NULL, WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         CW_USEDEFAULT, CW_USEDEFAULT, 9999, 9999, NULL, NULL, hInstance, NULL );
 
+    CHAR f_name[512];
+    sprintf ( f_name, "data_%ux%u__end.bin", nNodesCountX, nNodesCountY );
+    FILE *pF = fopen ( f_name, "wb" );
+    T_REAL fBuf;
+    for ( UINT ij = nNCX+1; ij < nNCM; ++ij ) {
+        T_REAL x = (ij%nNCX)/(T_REAL)(nNCX-1);
+        T_REAL y = (ij/nNCX)/(T_REAL)(nNCY-1);
+        fBuf = (exp(M_PI-M_PI*y)*(-1+exp(2*M_PI*y))/(-1+exp(2*M_PI))*sin(M_PI*x));
+        fwrite ( &fBuf, sizeof ( T_REAL ), 1, pF );
+        if ( ij%nNCX==nNodesCountX ) ij+=2;
+    }
+    fclose ( pF );
+
+
+
     MSG msg = { };
     while ( GetMessage ( &msg, NULL, 0, 0 ) ) {
         TranslateMessage ( &msg );
@@ -270,3 +337,4 @@ INT APIENTRY wWinMain (
 
     return msg.wParam;
 }
+
