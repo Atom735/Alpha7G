@@ -1,3 +1,3 @@
-set path=%path%;C:\a7\mingw64\bin
-set a7_path_sdk=C:\a7\sdk_build
+set PATH=%PATH%;F:\programs\MinGW-W64\i686-8.1.0-win32-dwarf-rt_v6-rev0\mingw32\bin
+set A7_PATH_SDK=F:\sdk
 cmd
