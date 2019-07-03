@@ -24,6 +24,20 @@ LRESULT CALLBACK rMsgProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
         case WM_COMMAND: {
             return 0;
         }
+        case WM_CHAR: {
+            if ( wParam >= 0x20 ) {
+                sBuf [ nBufSz ] = wParam;
+                ++nBufSz;
+            } else
+            if ( wParam == 0x08 ) {
+                --nBufSz;
+            } else
+            if ( wParam == 0x0D ) {
+                nBufSz = 0;
+            }
+            InvalidateRect ( hWnd, NULL, FALSE );
+            return 0;
+        }
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hDC = BeginPaint ( hWnd, &ps );
