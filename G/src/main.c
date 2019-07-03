@@ -5,6 +5,8 @@ CONST LPCWSTR g_ksMainClassName = L"WCNA7_MAIN";
 
 /* Процедура главного окна */
 LRESULT CALLBACK rMsgProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) {
+    static WCHAR sBuf[1024] = L"Hello World!";
+    static UINT nBufSz = 12;
     switch ( uMsg ) {
         case WM_CREATE: {
             return 0;
@@ -26,6 +28,10 @@ LRESULT CALLBACK rMsgProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
             PAINTSTRUCT ps;
             HDC hDC = BeginPaint ( hWnd, &ps );
             FillRect ( hDC, &ps.rcPaint, GetSysColorBrush ( 1 ) );
+            SetBkMode ( hDC, TRANSPARENT );
+            SelectObject ( hDC, (HFONT) GetStockObject ( SYSTEM_FONT ) );
+            SetTextColor ( hDC, 0x00FF7700 );
+            TextOutW ( hDC, 0, 0, sBuf, nBufSz );
             EndPaint ( hWnd, &ps );
             return 0;
         }
