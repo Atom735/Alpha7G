@@ -7,6 +7,7 @@ CONST LPCWSTR g_ksMainClassName = L"WCNA7_MAIN";
 LRESULT CALLBACK rMsgProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) {
     static WCHAR sBuf[1024] = L"Hello World!";
     static UINT nBufSz = 12;
+    static UINT nCarret = 0;
     switch ( uMsg ) {
         case WM_CREATE: {
             return 0;
@@ -24,16 +25,35 @@ LRESULT CALLBACK rMsgProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
         case WM_COMMAND: {
             return 0;
         }
+        case WM_KEYDOWN: {
+            if ( wParam == VK_LEFT && nCarret ) {
+                --nCarret;
+            } else
+            if ( wParam == VK_RIGHT && nCarret < nBufSz ) {
+                ++nCarret;
+            }
+            InvalidateRect ( hWnd, NULL, FALSE );
+            return 0;
+        }
         case WM_CHAR: {
             if ( wParam >= 0x20 ) {
-                sBuf [ nBufSz ] = wParam;
+                for ( UINT i = nBufSz; i > nCarret; --i ) {
+                    sBuf [ i ] = sBuf [ i - 1 ];
+                }
+                sBuf [ nCarret ] = wParam;
                 ++nBufSz;
+                ++nCarret;
             } else
-            if ( wParam == 0x08 ) {
+            if ( wParam == 0x08 && nCarret ) {
+                for ( UINT i = nCarret-1; i < nBufSz; ++i ) {
+                    sBuf [ i ] = sBuf [ i + 1 ];
+                }
                 --nBufSz;
+                --nCarret;
             } else
             if ( wParam == 0x0D ) {
                 nBufSz = 0;
+                nCarret = 0;
             }
             InvalidateRect ( hWnd, NULL, FALSE );
             return 0;
@@ -46,6 +66,13 @@ LRESULT CALLBACK rMsgProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
             SelectObject ( hDC, (HFONT) GetStockObject ( SYSTEM_FONT ) );
             SetTextColor ( hDC, 0x00FF7700 );
             TextOutW ( hDC, 0, 0, sBuf, nBufSz );
+
+            SIZE sz;
+            GetTextExtentPoint32W ( hDC, sBuf, nCarret, &sz );
+
+            SetTextColor ( hDC, 0x000077FF );
+            TextOutW ( hDC, sz.cx, 0, L"|", 1 );
+
             EndPaint ( hWnd, &ps );
             return 0;
         }
