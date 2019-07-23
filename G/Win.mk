@@ -38,7 +38,6 @@ CFLAGS =\
 	-municode\
 	-march=pentium4\
 	-Wall\
-	-O3\
 
 LDFLAGS =\
 	$(addprefix -L, $(PATH_LIBS))\

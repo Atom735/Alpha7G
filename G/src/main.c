@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <commdlg.h>
 
 #include <stdio.h>
 
@@ -25,6 +26,217 @@ struct SCarret {
     UINT nCol;
 };
 
+struct SSettigs {
+    HFONT hFont;
+    HBRUSH hBrushCarret;
+    HBRUSH hBrushBackground;
+
+    LPCWSTR sFontName;
+
+    UINT nOverScrollTop;
+    UINT nOverScrollBottom;
+    UINT nOverScrollLeft;
+    UINT nOverScrollRight;
+
+    UINT nOverLineTop;
+    UINT nOverLineBottom;
+    UINT nOverLineBetween;
+
+    UINT nCarretTop;
+    UINT nCarretBottom;
+    UINT nCarretWidth;
+
+    UINT nFontWidth;
+    UINT nFontHeight;
+
+    COLORREF iColorFont;
+    COLORREF iColorCarret;
+    COLORREF iColorBackground;
+};
+
+struct SSettigs g_Settings = {
+    .sFontName           = L"Fira Code",
+    .nOverScrollTop      = 32,
+    .nOverScrollBottom   = 32,
+    .nOverScrollLeft     = 32,
+    .nOverScrollRight    = 32,
+    .nOverLineTop        = 3,
+    .nOverLineBottom     = 6,
+    .nOverLineBetween    = 2,
+    .nCarretTop          = 2,
+    .nCarretBottom       = 2,
+    .nCarretWidth        = 3,
+    .nFontWidth          = 0,
+    .nFontHeight         = 16,
+    .iColorFont          = RGB ( 0xEE, 0xEE, 0xEE ),
+    .iColorCarret        = RGB ( 0xFF, 0xAA, 0x55 ),
+    .iColorBackground    = RGB ( 0x11, 0x13, 0x15 ),
+};
+
+FILE *_pF = NULL;
+
+INT CALLBACK rSettigsSetUp_EnumFontFamExProc ( CONST LOGFONTW * lpelfe, CONST TEXTMETRIC * lpntme, DWORD FontType, LPARAM lParam ) {
+    LPCSTR _CharSet ( BYTE i ) {
+        switch ( i ) {
+            case ANSI_CHARSET: return "ANSI_CHARSET";
+            case DEFAULT_CHARSET: return "DEFAULT_CHARSET";
+            case SYMBOL_CHARSET: return "SYMBOL_CHARSET";
+            case SHIFTJIS_CHARSET: return "SHIFTJIS_CHARSET";
+            case HANGEUL_CHARSET: return "HANGEUL_CHARSET";
+            case GB2312_CHARSET: return "GB2312_CHARSET";
+            case CHINESEBIG5_CHARSET: return "CHINESEBIG5_CHARSET";
+            case OEM_CHARSET: return "OEM_CHARSET";
+            case JOHAB_CHARSET: return "JOHAB_CHARSET";
+            case HEBREW_CHARSET: return "HEBREW_CHARSET";
+            case ARABIC_CHARSET: return "ARABIC_CHARSET";
+            case GREEK_CHARSET: return "GREEK_CHARSET";
+            case TURKISH_CHARSET: return "TURKISH_CHARSET";
+            case VIETNAMESE_CHARSET: return "VIETNAMESE_CHARSET";
+            case THAI_CHARSET: return "THAI_CHARSET";
+            case EASTEUROPE_CHARSET: return "EASTEUROPE_CHARSET";
+            case RUSSIAN_CHARSET: return "RUSSIAN_CHARSET";
+            case MAC_CHARSET: return "MAC_CHARSET";
+            case BALTIC_CHARSET: return "BALTIC_CHARSET";
+        }
+        return "NULL";
+    }
+    LPCSTR _OutPrecision ( BYTE i ) {
+        switch ( i ) {
+            case OUT_DEFAULT_PRECIS: return "OUT_DEFAULT_PRECIS";
+            case OUT_STRING_PRECIS: return "OUT_STRING_PRECIS";
+            case OUT_CHARACTER_PRECIS: return "OUT_CHARACTER_PRECIS";
+            case OUT_STROKE_PRECIS: return "OUT_STROKE_PRECIS";
+            case OUT_TT_PRECIS: return "OUT_TT_PRECIS";
+            case OUT_DEVICE_PRECIS: return "OUT_DEVICE_PRECIS";
+            case OUT_RASTER_PRECIS: return "OUT_RASTER_PRECIS";
+            case OUT_TT_ONLY_PRECIS: return "OUT_TT_ONLY_PRECIS";
+            case OUT_OUTLINE_PRECIS: return "OUT_OUTLINE_PRECIS";
+            case OUT_SCREEN_OUTLINE_PRECIS: return "OUT_SCREEN_OUTLINE_PRECIS";
+            case OUT_PS_ONLY_PRECIS: return "OUT_PS_ONLY_PRECIS";
+        }
+        return "NULL";
+    }
+    LPCSTR _ClipPrecision ( BYTE i ) {
+        switch ( i ) {
+            case CLIP_DEFAULT_PRECIS: return "CLIP_DEFAULT_PRECIS";
+            case CLIP_CHARACTER_PRECIS: return "CLIP_CHARACTER_PRECIS";
+            case CLIP_STROKE_PRECIS: return "CLIP_STROKE_PRECIS";
+            case CLIP_MASK: return "CLIP_MASK";
+            case CLIP_LH_ANGLES: return "CLIP_LH_ANGLES";
+            case CLIP_TT_ALWAYS: return "CLIP_TT_ALWAYS";
+            case CLIP_DFA_DISABLE: return "CLIP_DFA_DISABLE";
+            case CLIP_EMBEDDED: return "CLIP_EMBEDDED";
+        }
+        return "NULL";
+    }
+    LPCSTR _Quality ( BYTE i ) {
+        switch ( i ) {
+            case DEFAULT_QUALITY: return "DEFAULT_QUALITY";
+            case DRAFT_QUALITY: return "DRAFT_QUALITY";
+            case PROOF_QUALITY: return "PROOF_QUALITY";
+            case NONANTIALIASED_QUALITY: return "NONANTIALIASED_QUALITY";
+            case ANTIALIASED_QUALITY: return "ANTIALIASED_QUALITY";
+            case CLEARTYPE_QUALITY: return "CLEARTYPE_QUALITY";
+            case CLEARTYPE_NATURAL_QUALITY: return "CLEARTYPE_NATURAL_QUALITY";
+        }
+        return "NULL";
+    }
+    LPCSTR _PitchAndFamily ( BYTE i ) {
+        switch ( i ) {
+            case FIXED_PITCH: return "FIXED_PITCH";
+            case VARIABLE_PITCH: return "VARIABLE_PITCH";
+            case MONO_FONT: return "MONO_FONT";
+            case FF_ROMAN: return "FF_ROMAN";
+            case FF_SWISS: return "FF_SWISS";
+            case FF_MODERN: return "FF_MODERN";
+            case FF_SCRIPT: return "FF_SCRIPT";
+            case FF_DECORATIVE: return "FF_DECORATIVE";
+        }
+        return "";
+    }
+    static UINT i = 0; ++i;
+    fprintf ( _pF, "% 4u %ls\n", i, lpelfe -> lfFaceName );
+
+    fprintf ( _pF, "    Sizes       %ld x %ld : %ld\n", lpelfe -> lfHeight, lpelfe -> lfWidth, lpelfe -> lfWeight );
+    fprintf ( _pF, "    Orientation %ld x %ld\n", lpelfe -> lfEscapement, lpelfe -> lfOrientation );
+    fprintf ( _pF, "    IUS         %hd : %hd : %hd\n", lpelfe -> lfItalic, lpelfe -> lfUnderline, lpelfe -> lfStrikeOut );
+    fprintf ( _pF, "    CharSet        %hu %s\n", lpelfe -> lfCharSet, _CharSet ( lpelfe -> lfCharSet ) );
+    fprintf ( _pF, "    OutPrecision   %hu %s\n", lpelfe -> lfOutPrecision, _OutPrecision ( lpelfe -> lfOutPrecision ) );
+    fprintf ( _pF, "    ClipPrecision  %hu %s\n", lpelfe -> lfClipPrecision, _ClipPrecision ( lpelfe -> lfClipPrecision ) );
+    fprintf ( _pF, "    Quality        %hu %s\n", lpelfe -> lfQuality, _Quality ( lpelfe -> lfQuality ) );
+    fprintf ( _pF, "    PitchAndFamily 0x%hx", lpelfe -> lfPitchAndFamily );
+    for ( UINT i = 0; i < 8; ++i ) {
+        fprintf ( _pF, " %s", _PitchAndFamily ( lpelfe -> lfPitchAndFamily & (1<<i) ) );
+    }
+    fprintf ( _pF, "\n\n" );
+
+    return 1;
+}
+
+VOID rSettigsSetUp ( struct SSettigs * p, HDC hDC ) {
+    LOGFONTW _lf = { 0 };
+    _lf.lfPitchAndFamily = FIXED_PITCH | MONO_FONT;
+    // memcpy ( _lf.lfFaceName, p -> sFontName, (wcslen ( p -> sFontName ) + 1) * 2 );
+    _pF = fopen ( "fonts2.txt", "w" );
+    EnumFontFamiliesExW ( hDC, &_lf, (FONTENUMPROCW)(rSettigsSetUp_EnumFontFamExProc), (LPARAM)(0), 0 );
+    fclose ( _pF );
+    _lf.lfHeight = p -> nFontHeight;
+    _lf.lfWidth = 0;
+    p -> hFont = CreateFontIndirectW (&_lf );
+    p -> hBrushCarret = CreateSolidBrush ( p -> iColorCarret );
+    p -> hBrushBackground = CreateSolidBrush ( p -> iColorBackground );
+
+    CHOOSEFONTW cf;
+    LOGFONTW lf;
+    HFONT hfont;
+
+    // Initialize members of the CHOOSEFONT structure.
+
+    cf.lStructSize = sizeof(CHOOSEFONT);
+    cf.hwndOwner = (HWND)NULL;
+    cf.hDC = (HDC)NULL;
+    cf.lpLogFont = &lf;
+    cf.iPointSize = 0;
+    cf.Flags = CF_SCREENFONTS;
+    cf.rgbColors = RGB(0,0,0);
+    cf.lCustData = 0L;
+    cf.lpfnHook = (LPCFHOOKPROC)NULL;
+    cf.lpTemplateName = (LPSTR)NULL;
+    cf.hInstance = (HINSTANCE) NULL;
+    cf.lpszStyle = (LPWSTR)NULL;
+    cf.nFontType = SCREEN_FONTTYPE;
+    cf.nSizeMin = 0;
+    cf.nSizeMax = 0;
+
+    // Display the CHOOSEFONT common-dialog box.
+
+    ChooseFontW(&cf);
+
+    // Create a logical font based on the user's
+    // selection and return a handle identifying
+    // that font.
+
+    FILE *pF = fopen ( "font.txt", "w" );
+
+    fprintf ( pF, "L_lfHeight         %ld\n", lf.lfHeight );
+    fprintf ( pF, "L_lfWidth          %ld\n", lf.lfWidth );
+    fprintf ( pF, "L_lfEscapement     %ld\n", lf.lfEscapement );
+    fprintf ( pF, "L_lfOrientation    %ld\n", lf.lfOrientation );
+    fprintf ( pF, "L_lfWeight         %ld\n", lf.lfWeight );
+    fprintf ( pF, "B_lfItalic         %hd\n", lf.lfItalic );
+    fprintf ( pF, "B_lfUnderline      %hd\n", lf.lfUnderline );
+    fprintf ( pF, "B_lfStrikeOut      %hd\n", lf.lfStrikeOut );
+    fprintf ( pF, "B_lfCharSet        %hd\n", lf.lfCharSet );
+    fprintf ( pF, "B_lfOutPrecision   %hd\n", lf.lfOutPrecision );
+    fprintf ( pF, "B_lfClipPrecision  %hd\n", lf.lfClipPrecision );
+    fprintf ( pF, "B_lfQuality        %hd\n", lf.lfQuality );
+    fprintf ( pF, "B_lfPitchAndFamily %hd\n", lf.lfPitchAndFamily );
+    fprintf ( pF, "W_lfFaceName[32]   %ls\n", lf.lfFaceName );
+
+    fclose ( pF );
+
+    p -> hFont = CreateFontIndirectW(cf.lpLogFont);
+}
 
 struct SViewer {
     struct SFileBuffer * pFB;
@@ -32,7 +244,44 @@ struct SViewer {
     UINT nFontSize;
     UINT nHeight;
     UINT nPosY;
+    UINT nPosX;
 };
+
+VOID rViewerRender ( struct SViewer * p, HDC hDC ) {
+    if ( g_Settings.hFont == NULL ) {
+        rSettigsSetUp ( &g_Settings, hDC );
+        p -> nFontSize = g_Settings.nFontHeight;
+    }
+    SetBkMode ( hDC, TRANSPARENT );
+    SelectObject ( hDC, g_Settings.hFont );
+    SetTextColor ( hDC, g_Settings.iColorFont );
+
+    if ( p -> nFontSize == 0 ) {
+        SIZE sz;
+        GetTextExtentPoint32W ( hDC, L"A", 1, &sz );
+        p -> nFontSize = sz.cy;
+    }
+    for ( UINT i = 0; i < p -> pFB -> nLines; ++ i ) {
+        if ( p -> pFB -> pLines [ i ] . nSize > 0 ) {
+            TextOutW ( hDC, g_Settings.nOverScrollLeft - p -> nPosX, ( p -> nFontSize + g_Settings.nOverLineTop + g_Settings.nOverLineBottom ) * ( i + 1 ) + g_Settings.nOverLineTop + g_Settings.nOverScrollTop - p -> nPosY, p -> pFB -> pLines [ i ] . sBuf, p -> pFB -> pLines [ i ] . nSize );
+        }
+    }
+    if ( p -> pCarret != NULL ) {
+        SIZE sz = { };
+        if ( p -> pCarret -> nCol > 0 ) {
+            GetTextExtentPoint32W ( hDC, p -> pFB -> pLines [ p -> pCarret -> nLine ] . sBuf, p -> pCarret -> nCol, &sz );
+        } else {
+            sz.cx = 0;
+        }
+        RECT rc;
+        rc.left = sz.cx + g_Settings.nOverScrollLeft - p -> nPosX;
+        rc.right = rc.left + g_Settings.nCarretWidth;
+        rc.top = ( p -> nFontSize + g_Settings.nOverLineTop + g_Settings.nOverLineBottom ) * ( p -> pCarret -> nLine + 1 ) + g_Settings.nOverLineTop + g_Settings.nOverScrollTop - p -> nPosY - g_Settings.nCarretTop;
+        rc.bottom = rc.top + p -> nFontSize + g_Settings.nCarretTop + g_Settings.nCarretBottom;
+        FillRect ( hDC, &rc, g_Settings.hBrushCarret );
+    }
+}
+
 
 
 VOID rCarretMoveLeft ( struct SCarret * p ) {
@@ -137,33 +386,7 @@ struct SFileBuffer * rFB_OpenFile ( LPCWSTR sFileName ) {
     return pFB;
 }
 
-VOID rViewerRender ( struct SViewer * p, HDC hDC ) {
-    if ( p -> nFontSize == 0 ) {
-        SIZE sz;
-        GetTextExtentPoint32W ( hDC, L"A", 1, &sz );
-        p -> nFontSize = sz.cy;
-    }
-    for ( UINT i = 0; i < p -> pFB -> nLines; ++ i ) {
-        if ( p -> pFB -> pLines [ i ] . nSize > 0 ) {
-            TextOutW ( hDC, 0, p -> nFontSize * ( i + 1 ) - p -> nPosY, p -> pFB -> pLines [ i ] . sBuf, p -> pFB -> pLines [ i ] . nSize );
-        }
-    }
-    if ( p -> pCarret != NULL ) {
-        SIZE sz = { };
-        if ( p -> pCarret -> nCol > 0 ) {
-            GetTextExtentPoint32W ( hDC, p -> pFB -> pLines [ p -> pCarret -> nLine ] . sBuf, p -> pCarret -> nCol, &sz );
-        } else {
-            sz.cx = 0;
-        }
-        RECT rc = {
-            .left = sz.cx,
-            .top = p -> nFontSize * ( p -> pCarret -> nLine + 1 ) - p -> nPosY,
-            .right = sz.cx + 1,
-            .bottom = p -> nFontSize * ( p -> pCarret -> nLine + 2 ) - p -> nPosY - 1,
-        };
-        FillRect ( hDC, &rc, GetSysColorBrush ( 3 ) );
-    }
-}
+
 
 /* Процедура главного окна */
 LRESULT CALLBACK rMsgProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) {
@@ -179,6 +402,9 @@ LRESULT CALLBACK rMsgProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
             ACarret . pFB = pFB;
             AViewer . pFB = pFB;
             AViewer . pCarret = &ACarret;
+
+
+
             return 0;
         }
         case WM_SIZE: {

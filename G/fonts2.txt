@@ -1,0 +1,1740 @@
+   1 Arial
+    Sizes       36 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+   2 Batang
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+   3 @Batang
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+   4 BatangChe
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+   5 @BatangChe
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+   6 Gungsuh
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+   7 @Gungsuh
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+   8 GungsuhChe
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+   9 @GungsuhChe
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  10 Courier New
+    Sizes       36 x 19 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  11 DaunPenh
+    Sizes       43 x 12 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+  12 DokChampa
+    Sizes       62 x 19 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  13 Estrangelo Edessa
+    Sizes       36 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x42  VARIABLE_PITCH     FF_SCRIPT 
+
+  14 Euphemia
+    Sizes       42 x 22 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  15 Gautami
+    Sizes       56 x 18 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  16 Vani
+    Sizes       54 x 23 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  17 Gulim
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  18 @Gulim
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  19 GulimChe
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  20 @GulimChe
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  21 Dotum
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  22 @Dotum
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  23 DotumChe
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  24 @DotumChe
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  25 Impact
+    Sizes       39 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  26 Iskoola Pota
+    Sizes       36 x 22 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  27 Kalinga
+    Sizes       48 x 19 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  28 Kartika
+    Sizes       46 x 27 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  29 Khmer UI
+    Sizes       36 x 21 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  30 Lao UI
+    Sizes       43 x 18 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  31 Latha
+    Sizes       44 x 23 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  32 Lucida Console
+    Sizes       32 x 19 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  33 Malgun Gothic
+    Sizes       43 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  34 @Malgun Gothic
+    Sizes       43 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  35 Mangal
+    Sizes       54 x 19 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  36 Meiryo
+    Sizes       48 x 31 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  37 @Meiryo
+    Sizes       48 x 31 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  38 Meiryo UI
+    Sizes       41 x 17 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  39 @Meiryo UI
+    Sizes       41 x 17 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  40 Microsoft Himalaya
+    Sizes       32 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+  41 Microsoft JhengHei
+    Sizes       43 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  42 @Microsoft JhengHei
+    Sizes       43 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  43 Microsoft YaHei
+    Sizes       42 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  44 @Microsoft YaHei
+    Sizes       42 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  45 MingLiU
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  46 @MingLiU
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  47 PMingLiU
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  48 @PMingLiU
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  49 MingLiU_HKSCS
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  50 @MingLiU_HKSCS
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  51 MingLiU-ExtB
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  52 @MingLiU-ExtB
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  53 PMingLiU-ExtB
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  54 @PMingLiU-ExtB
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  55 MingLiU_HKSCS-ExtB
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  56 @MingLiU_HKSCS-ExtB
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  57 Mongolian Baiti
+    Sizes       34 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x42  VARIABLE_PITCH     FF_SCRIPT 
+
+  58 MS Gothic
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  59 @MS Gothic
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  60 MS PGothic
+    Sizes       32 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  61 @MS PGothic
+    Sizes       32 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  62 MS UI Gothic
+    Sizes       32 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  63 @MS UI Gothic
+    Sizes       32 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  64 MS Mincho
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  65 @MS Mincho
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  66 MS PMincho
+    Sizes       32 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  67 @MS PMincho
+    Sizes       32 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  68 MV Boli
+    Sizes       52 x 18 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+  69 Microsoft New Tai Lue
+    Sizes       42 x 19 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  70 Nyala
+    Sizes       33 x 18 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+  71 Microsoft PhagsPa
+    Sizes       41 x 24 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  72 Plantagenet Cherokee
+    Sizes       41 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  73 Raavi
+    Sizes       53 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  74 Segoe Script
+    Sizes       51 x 22 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  75 Segoe UI
+    Sizes       43 x 17 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  76 Segoe UI Semibold
+    Sizes       43 x 18 : 600
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  77 Segoe UI Light
+    Sizes       43 x 17 : 300
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  78 Segoe UI Symbol
+    Sizes       43 x 23 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  79 Shruti
+    Sizes       54 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  80 SimSun
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+  81 @SimSun
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+  82 NSimSun
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  83 @NSimSun
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  84 SimSun-ExtB
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  85 @SimSun-ExtB
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+  86 Sylfaen
+    Sizes       42 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  87 Microsoft Tai Le
+    Sizes       41 x 19 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  88 Times New Roman
+    Sizes       35 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  89 Tunga
+    Sizes       53 x 18 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  90 Vrinda
+    Sizes       44 x 20 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  91 Shonar Bangla
+    Sizes       41 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  92 Microsoft Yi Baiti
+    Sizes       32 x 21 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x42  VARIABLE_PITCH     FF_SCRIPT 
+
+  93 Tahoma
+    Sizes       39 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  94 Microsoft Sans Serif
+    Sizes       36 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  95 Angsana New
+    Sizes       43 x 8 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+  96 Aparajita
+    Sizes       38 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  97 Cordia New
+    Sizes       44 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+  98 Ebrima
+    Sizes       43 x 19 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+  99 Gisha
+    Sizes       38 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 100 Kokila
+    Sizes       37 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 101 Leelawadee
+    Sizes       38 x 17 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 102 Microsoft Uighur
+    Sizes       32 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 103 MoolBoran
+    Sizes       43 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 104 Utsaah
+    Sizes       36 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 105 Vijaya
+    Sizes       32 x 19 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 106 Andalus
+    Sizes       49 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 107 Arabic Typesetting
+    Sizes       36 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x42  VARIABLE_PITCH     FF_SCRIPT 
+
+ 108 Simplified Arabic
+    Sizes       53 x 13 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 109 Simplified Arabic Fixed
+    Sizes       35 x 19 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 110 Sakkal Majalla
+    Sizes       45 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 111 Traditional Arabic
+    Sizes       48 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 112 FangSong
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 113 @FangSong
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 114 SimHei
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 115 @SimHei
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 116 KaiTi
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 117 @KaiTi
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 118 AngsanaUPC
+    Sizes       43 x 8 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 119 Browallia New
+    Sizes       40 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 120 BrowalliaUPC
+    Sizes       40 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 121 CordiaUPC
+    Sizes       44 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 122 DilleniaUPC
+    Sizes       42 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 123 EucrosiaUPC
+    Sizes       39 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 124 FreesiaUPC
+    Sizes       38 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 125 IrisUPC
+    Sizes       40 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 126 JasmineUPC
+    Sizes       34 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 127 KodchiangUPC
+    Sizes       31 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 128 LilyUPC
+    Sizes       30 x 9 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 129 DFKai-SB
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x41 FIXED_PITCH      FF_SCRIPT 
+
+ 130 @DFKai-SB
+    Sizes       32 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x41 FIXED_PITCH      FF_SCRIPT 
+
+ 131 Lucida Sans Unicode
+    Sizes       49 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 132 Arial Black
+    Sizes       45 x 18 : 900
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 133 Calibri
+    Sizes       39 x 17 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 134 Cambria
+    Sizes       38 x 20 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 135 Cambria Math
+    Sizes       179 x 20 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 136 Candara
+    Sizes       39 x 17 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 137 Comic Sans MS
+    Sizes       45 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x42  VARIABLE_PITCH     FF_SCRIPT 
+
+ 138 Consolas
+    Sizes       37 x 18 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 139 Constantia
+    Sizes       39 x 17 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 140 Corbel
+    Sizes       39 x 17 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 141 Franklin Gothic Medium
+    Sizes       36 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 142 Gabriola
+    Sizes       59 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x52  VARIABLE_PITCH   FF_ROMAN  FF_SCRIPT 
+
+ 143 Georgia
+    Sizes       36 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 144 Palatino Linotype
+    Sizes       43 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 145 Segoe Print
+    Sizes       56 x 21 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 146 Trebuchet MS
+    Sizes       37 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 147 Verdana
+    Sizes       39 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 148 Anonymous Pro
+    Sizes       32 x 17 : 400
+    Orientation 0 x 0
+    IUS         255 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 149 Fira Code
+    Sizes       38 x 19 : 700
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 150 Fira Code Light
+    Sizes       38 x 19 : 300
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 151 Fira Code Medium
+    Sizes       38 x 19 : 500
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 152 Fira Code Retina
+    Sizes       38 x 19 : 450
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x31 FIXED_PITCH    FF_ROMAN FF_SWISS  
+
+ 153 Material Icons
+    Sizes       32 x 32 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 154 Roboto Black
+    Sizes       38 x 19 : 900
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 155 Roboto
+    Sizes       38 x 19 : 700
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 156 Roboto Condensed
+    Sizes       38 x 16 : 700
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 157 Roboto Condensed Light
+    Sizes       38 x 16 : 300
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 158 Roboto Light
+    Sizes       38 x 18 : 300
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 159 Roboto Medium
+    Sizes       38 x 18 : 500
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 160 Roboto Mono
+    Sizes       42 x 19 : 700
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 161 Roboto Mono Light
+    Sizes       42 x 19 : 300
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 162 Roboto Mono Medium
+    Sizes       42 x 19 : 500
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 163 Roboto Mono Thin
+    Sizes       42 x 19 : 250
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 164 Roboto Slab
+    Sizes       42 x 19 : 700
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 165 Roboto Thin
+    Sizes       38 x 17 : 250
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x2  VARIABLE_PITCH      
+
+ 166 Century
+    Sizes       38 x 15 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 167 Arial Unicode MS
+    Sizes       43 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 168 @Arial Unicode MS
+    Sizes       43 x 14 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 169 Book Antiqua
+    Sizes       38 x 15 : 700
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 170 Century Gothic
+    Sizes       38 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 171 Arial Narrow
+    Sizes       36 x 12 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
+ 172 Bookman Old Style
+    Sizes       36 x 16 : 300
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 173 Garamond
+    Sizes       36 x 12 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x12  VARIABLE_PITCH   FF_ROMAN   
+
+ 174 MS Reference Sans Serif
+    Sizes       39 x 16 : 400
+    Orientation 0 x 0
+    IUS         0 : 0 : 0
+    CharSet        0 ANSI_CHARSET
+    OutPrecision   3 OUT_STROKE_PRECIS
+    ClipPrecision  2 CLIP_STROKE_PRECIS
+    Quality        1 DRAFT_QUALITY
+    PitchAndFamily 0x22  VARIABLE_PITCH    FF_SWISS  
+
