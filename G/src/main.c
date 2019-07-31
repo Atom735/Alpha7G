@@ -1,6 +1,9 @@
 #include <Windows.h>
 #include <commdlg.h>
+/* Привет мир)))
 
+->
+=> */
 #include <stdio.h>
 
 HINSTANCE g_hInstance;
@@ -26,6 +29,26 @@ struct SCarret {
     UINT nCol;
 };
 
+struct SColorShemeGlobal {
+    UINT32 foreground;
+    UINT32 background;
+    UINT32 caret;
+    UINT32 block_caret;
+    UINT32 invisibles;
+    UINT32 line_highlight;
+    UINT32 selection;
+    UINT32 selection_border;
+    UINT32 misspelling;
+    UINT32 active_guide;
+    UINT32 find_highlight_foreground;
+    UINT32 find_highlight;
+    UINT32 brackets_options;
+    UINT32 brackets_foreground;
+    UINT32 bracket_contents_options;
+    UINT32 bracket_contents_foreground;
+    UINT32 tags_options;
+};
+
 struct SSettigs {
     HFONT hFont;
     HBRUSH hBrushCarret;
@@ -33,191 +56,39 @@ struct SSettigs {
 
     LPCWSTR sFontName;
 
-    UINT nOverScrollTop;
-    UINT nOverScrollBottom;
-    UINT nOverScrollLeft;
-    UINT nOverScrollRight;
-
-    UINT nOverLineTop;
-    UINT nOverLineBottom;
-    UINT nOverLineBetween;
-
-    UINT nCarretTop;
-    UINT nCarretBottom;
-    UINT nCarretWidth;
-
-    UINT nFontWidth;
     UINT nFontHeight;
+    UINT nFontWeight;
+    UINT nFontWidth; /* if Fix Width */
 
-    COLORREF iColorFont;
-    COLORREF iColorCarret;
-    COLORREF iColorBackground;
+    UINT32 iColorFont;
+    UINT32 iColorCarret;
+    UINT32 iColorBackground;
 };
 
 struct SSettigs g_Settings = {
     .sFontName           = L"Fira Code",
-    .nOverScrollTop      = 32,
-    .nOverScrollBottom   = 32,
-    .nOverScrollLeft     = 32,
-    .nOverScrollRight    = 32,
-    .nOverLineTop        = 3,
-    .nOverLineBottom     = 6,
-    .nOverLineBetween    = 2,
-    .nCarretTop          = 2,
-    .nCarretBottom       = 2,
-    .nCarretWidth        = 3,
+    .nFontHeight         = 24,
+    .nFontWeight         = 400,
     .nFontWidth          = 0,
-    .nFontHeight         = 16,
     .iColorFont          = RGB ( 0xEE, 0xEE, 0xEE ),
     .iColorCarret        = RGB ( 0xFF, 0xAA, 0x55 ),
     .iColorBackground    = RGB ( 0x11, 0x13, 0x15 ),
 };
 
-FILE *_pF = NULL;
-
-INT CALLBACK rSettigsSetUp_EnumFontFamExProc ( CONST LOGFONTW * lpelfe, CONST TEXTMETRIC * lpntme, DWORD FontType, LPARAM lParam ) {
-    LPCSTR _CharSet ( BYTE i ) {
-        switch ( i ) {
-            case ANSI_CHARSET: return "ANSI_CHARSET";
-            case DEFAULT_CHARSET: return "DEFAULT_CHARSET";
-            case SYMBOL_CHARSET: return "SYMBOL_CHARSET";
-            case SHIFTJIS_CHARSET: return "SHIFTJIS_CHARSET";
-            case HANGEUL_CHARSET: return "HANGEUL_CHARSET";
-            case GB2312_CHARSET: return "GB2312_CHARSET";
-            case CHINESEBIG5_CHARSET: return "CHINESEBIG5_CHARSET";
-            case OEM_CHARSET: return "OEM_CHARSET";
-            case JOHAB_CHARSET: return "JOHAB_CHARSET";
-            case HEBREW_CHARSET: return "HEBREW_CHARSET";
-            case ARABIC_CHARSET: return "ARABIC_CHARSET";
-            case GREEK_CHARSET: return "GREEK_CHARSET";
-            case TURKISH_CHARSET: return "TURKISH_CHARSET";
-            case VIETNAMESE_CHARSET: return "VIETNAMESE_CHARSET";
-            case THAI_CHARSET: return "THAI_CHARSET";
-            case EASTEUROPE_CHARSET: return "EASTEUROPE_CHARSET";
-            case RUSSIAN_CHARSET: return "RUSSIAN_CHARSET";
-            case MAC_CHARSET: return "MAC_CHARSET";
-            case BALTIC_CHARSET: return "BALTIC_CHARSET";
-        }
-        return "NULL";
-    }
-    LPCSTR _OutPrecision ( BYTE i ) {
-        switch ( i ) {
-            case OUT_DEFAULT_PRECIS: return "OUT_DEFAULT_PRECIS";
-            case OUT_STRING_PRECIS: return "OUT_STRING_PRECIS";
-            case OUT_CHARACTER_PRECIS: return "OUT_CHARACTER_PRECIS";
-            case OUT_STROKE_PRECIS: return "OUT_STROKE_PRECIS";
-            case OUT_TT_PRECIS: return "OUT_TT_PRECIS";
-            case OUT_DEVICE_PRECIS: return "OUT_DEVICE_PRECIS";
-            case OUT_RASTER_PRECIS: return "OUT_RASTER_PRECIS";
-            case OUT_TT_ONLY_PRECIS: return "OUT_TT_ONLY_PRECIS";
-            case OUT_OUTLINE_PRECIS: return "OUT_OUTLINE_PRECIS";
-            case OUT_SCREEN_OUTLINE_PRECIS: return "OUT_SCREEN_OUTLINE_PRECIS";
-            case OUT_PS_ONLY_PRECIS: return "OUT_PS_ONLY_PRECIS";
-        }
-        return "NULL";
-    }
-    LPCSTR _ClipPrecision ( BYTE i ) {
-        switch ( i ) {
-            case CLIP_DEFAULT_PRECIS: return "CLIP_DEFAULT_PRECIS";
-            case CLIP_CHARACTER_PRECIS: return "CLIP_CHARACTER_PRECIS";
-            case CLIP_STROKE_PRECIS: return "CLIP_STROKE_PRECIS";
-            case CLIP_MASK: return "CLIP_MASK";
-            case CLIP_LH_ANGLES: return "CLIP_LH_ANGLES";
-            case CLIP_TT_ALWAYS: return "CLIP_TT_ALWAYS";
-            case CLIP_DFA_DISABLE: return "CLIP_DFA_DISABLE";
-            case CLIP_EMBEDDED: return "CLIP_EMBEDDED";
-        }
-        return "NULL";
-    }
-    LPCSTR _Quality ( BYTE i ) {
-        switch ( i ) {
-            case DEFAULT_QUALITY: return "DEFAULT_QUALITY";
-            case DRAFT_QUALITY: return "DRAFT_QUALITY";
-            case PROOF_QUALITY: return "PROOF_QUALITY";
-            case NONANTIALIASED_QUALITY: return "NONANTIALIASED_QUALITY";
-            case ANTIALIASED_QUALITY: return "ANTIALIASED_QUALITY";
-            case CLEARTYPE_QUALITY: return "CLEARTYPE_QUALITY";
-            case CLEARTYPE_NATURAL_QUALITY: return "CLEARTYPE_NATURAL_QUALITY";
-        }
-        return "NULL";
-    }
-    LPCSTR _PitchAndFamily ( BYTE i ) {
-        switch ( i ) {
-            case FIXED_PITCH: return "FIXED_PITCH";
-            case VARIABLE_PITCH: return "VARIABLE_PITCH";
-            case MONO_FONT: return "MONO_FONT";
-            case FF_ROMAN: return "FF_ROMAN";
-            case FF_SWISS: return "FF_SWISS";
-            case FF_MODERN: return "FF_MODERN";
-            case FF_SCRIPT: return "FF_SCRIPT";
-            case FF_DECORATIVE: return "FF_DECORATIVE";
-        }
-        return "";
-    }
-    static UINT i = 0; ++i;
-    fprintf ( _pF, "% 4u %ls\n", i, lpelfe -> lfFaceName );
-
-    fprintf ( _pF, "    Sizes       %ld x %ld : %ld\n", lpelfe -> lfHeight, lpelfe -> lfWidth, lpelfe -> lfWeight );
-    fprintf ( _pF, "    Orientation %ld x %ld\n", lpelfe -> lfEscapement, lpelfe -> lfOrientation );
-    fprintf ( _pF, "    IUS         %hd : %hd : %hd\n", lpelfe -> lfItalic, lpelfe -> lfUnderline, lpelfe -> lfStrikeOut );
-    fprintf ( _pF, "    CharSet        %hu %s\n", lpelfe -> lfCharSet, _CharSet ( lpelfe -> lfCharSet ) );
-    fprintf ( _pF, "    OutPrecision   %hu %s\n", lpelfe -> lfOutPrecision, _OutPrecision ( lpelfe -> lfOutPrecision ) );
-    fprintf ( _pF, "    ClipPrecision  %hu %s\n", lpelfe -> lfClipPrecision, _ClipPrecision ( lpelfe -> lfClipPrecision ) );
-    fprintf ( _pF, "    Quality        %hu %s\n", lpelfe -> lfQuality, _Quality ( lpelfe -> lfQuality ) );
-    fprintf ( _pF, "    PitchAndFamily 0x%hx", lpelfe -> lfPitchAndFamily );
-    for ( UINT i = 0; i < 8; ++i ) {
-        fprintf ( _pF, " %s", _PitchAndFamily ( lpelfe -> lfPitchAndFamily & (1<<i) ) );
-    }
-    fprintf ( _pF, "\n\n" );
-
-    return 1;
-}
-
 VOID rSettigsSetUp ( struct SSettigs * p, HDC hDC ) {
-    LOGFONTW _lf = { 0 };
-    _lf.lfPitchAndFamily = FIXED_PITCH | MONO_FONT;
-    // memcpy ( _lf.lfFaceName, p -> sFontName, (wcslen ( p -> sFontName ) + 1) * 2 );
-    _pF = fopen ( "fonts2.txt", "w" );
-    EnumFontFamiliesExW ( hDC, &_lf, (FONTENUMPROCW)(rSettigsSetUp_EnumFontFamExProc), (LPARAM)(0), 0 );
-    fclose ( _pF );
-    _lf.lfHeight = p -> nFontHeight;
-    _lf.lfWidth = 0;
-    p -> hFont = CreateFontIndirectW (&_lf );
+
+    LOGFONTW lf = { 0 };
+    memcpy ( lf.lfFaceName, p -> sFontName, ( wcslen ( p -> sFontName ) + 1 ) * 2 );
+    lf.lfHeight    = p -> nFontHeight;
+    lf.lfWidth     = 0;
+    lf.lfWeight    = p -> nFontWeight;
+    lf.lfCharSet   = ANSI_CHARSET;
+    p -> hFont = CreateFontIndirectW ( &lf );
     p -> hBrushCarret = CreateSolidBrush ( p -> iColorCarret );
     p -> hBrushBackground = CreateSolidBrush ( p -> iColorBackground );
 
-    CHOOSEFONTW cf;
-    LOGFONTW lf;
-    HFONT hfont;
-
-    // Initialize members of the CHOOSEFONT structure.
-
-    cf.lStructSize = sizeof(CHOOSEFONT);
-    cf.hwndOwner = (HWND)NULL;
-    cf.hDC = (HDC)NULL;
-    cf.lpLogFont = &lf;
-    cf.iPointSize = 0;
-    cf.Flags = CF_SCREENFONTS;
-    cf.rgbColors = RGB(0,0,0);
-    cf.lCustData = 0L;
-    cf.lpfnHook = (LPCFHOOKPROC)NULL;
-    cf.lpTemplateName = (LPSTR)NULL;
-    cf.hInstance = (HINSTANCE) NULL;
-    cf.lpszStyle = (LPWSTR)NULL;
-    cf.nFontType = SCREEN_FONTTYPE;
-    cf.nSizeMin = 0;
-    cf.nSizeMax = 0;
-
-    // Display the CHOOSEFONT common-dialog box.
-
-    ChooseFontW(&cf);
-
-    // Create a logical font based on the user's
-    // selection and return a handle identifying
-    // that font.
 
     FILE *pF = fopen ( "font.txt", "w" );
-
     fprintf ( pF, "L_lfHeight         %ld\n", lf.lfHeight );
     fprintf ( pF, "L_lfWidth          %ld\n", lf.lfWidth );
     fprintf ( pF, "L_lfEscapement     %ld\n", lf.lfEscapement );
@@ -231,11 +102,34 @@ VOID rSettigsSetUp ( struct SSettigs * p, HDC hDC ) {
     fprintf ( pF, "B_lfClipPrecision  %hd\n", lf.lfClipPrecision );
     fprintf ( pF, "B_lfQuality        %hd\n", lf.lfQuality );
     fprintf ( pF, "B_lfPitchAndFamily %hd\n", lf.lfPitchAndFamily );
-    fprintf ( pF, "W_lfFaceName[32]   %ls\n", lf.lfFaceName );
+    fprintf ( pF, "W_lfFaceName[32]   %ls\n\n\n", lf.lfFaceName );
 
+    SelectObject ( hDC, p -> hFont );
+    TEXTMETRICW tm;
+    GetTextMetricsW ( hDC, &tm );
+
+    fprintf ( pF, "tmHeight            %ld\n", (LONG)tm.tmHeight );
+    fprintf ( pF, "tmAscent            %ld\n", (LONG)tm.tmAscent );
+    fprintf ( pF, "tmDescent           %ld\n", (LONG)tm.tmDescent );
+    fprintf ( pF, "tmInternalLeading   %ld\n", (LONG)tm.tmInternalLeading );
+    fprintf ( pF, "tmExternalLeading   %ld\n", (LONG)tm.tmExternalLeading );
+    fprintf ( pF, "tmAveCharWidth      %ld\n", (LONG)tm.tmAveCharWidth );
+    fprintf ( pF, "tmMaxCharWidth      %ld\n", (LONG)tm.tmMaxCharWidth );
+    fprintf ( pF, "tmWeight            %ld\n", (LONG)tm.tmWeight );
+    fprintf ( pF, "tmOverhang          %ld\n", (LONG)tm.tmOverhang );
+    fprintf ( pF, "tmDigitizedAspectX  %ld\n", (LONG)tm.tmDigitizedAspectX );
+    fprintf ( pF, "tmDigitizedAspectY  %ld\n", (LONG)tm.tmDigitizedAspectY );
+    fprintf ( pF, "tmFirstChar         %ld\n", (LONG)tm.tmFirstChar );
+    fprintf ( pF, "tmLastChar          %ld\n", (LONG)tm.tmLastChar );
+    fprintf ( pF, "tmDefaultChar       %ld\n", (LONG)tm.tmDefaultChar );
+    fprintf ( pF, "tmBreakChar         %ld\n", (LONG)tm.tmBreakChar );
+    fprintf ( pF, "tmItalic            %ld\n", (LONG)tm.tmItalic );
+    fprintf ( pF, "tmUnderlined        %ld\n", (LONG)tm.tmUnderlined );
+    fprintf ( pF, "tmStruckOut         %ld\n", (LONG)tm.tmStruckOut );
+    fprintf ( pF, "tmPitchAndFamily    %ld\n", (LONG)tm.tmPitchAndFamily );
+    fprintf ( pF, "tmCharSet           %ld\n", (LONG)tm.tmCharSet );
     fclose ( pF );
 
-    p -> hFont = CreateFontIndirectW(cf.lpLogFont);
 }
 
 struct SViewer {
@@ -256,15 +150,28 @@ VOID rViewerRender ( struct SViewer * p, HDC hDC ) {
     SelectObject ( hDC, g_Settings.hFont );
     SetTextColor ( hDC, g_Settings.iColorFont );
 
-    if ( p -> nFontSize == 0 ) {
-        SIZE sz;
-        GetTextExtentPoint32W ( hDC, L"A", 1, &sz );
-        p -> nFontSize = sz.cy;
-    }
     for ( UINT i = 0; i < p -> pFB -> nLines; ++ i ) {
         if ( p -> pFB -> pLines [ i ] . nSize > 0 ) {
+            {
+                SIZE szOld = { };
+                SIZE sz = { };
+                RECT rc;
+                for ( UINT j = 1; j < p -> pFB -> pLines [ i ] . nSize; ++j ) {
+                    GetTextExtentPoint32W ( hDC, p -> pFB -> pLines [ i ] . sBuf, j, &sz );
+                    rc.left = szOld.cx + g_Settings.nOverScrollLeft - p -> nPosX;
+                    rc.right = rc.left + sz.cx - szOld.cx - 1;
+                    rc.top = ( p -> nFontSize + g_Settings.nOverLineTop + g_Settings.nOverLineBottom ) * ( i + 1 ) + g_Settings.nOverLineTop + g_Settings.nOverScrollTop - p -> nPosY;
+                    rc.bottom = rc.top + p -> nFontSize - 1;
+                    szOld.cx = sz.cx;
+                    FillRect ( hDC, &rc, g_Settings.hBrushCarret );
+                }
+            }
+
             TextOutW ( hDC, g_Settings.nOverScrollLeft - p -> nPosX, ( p -> nFontSize + g_Settings.nOverLineTop + g_Settings.nOverLineBottom ) * ( i + 1 ) + g_Settings.nOverLineTop + g_Settings.nOverScrollTop - p -> nPosY, p -> pFB -> pLines [ i ] . sBuf, p -> pFB -> pLines [ i ] . nSize );
+
         }
+
+
     }
     if ( p -> pCarret != NULL ) {
         SIZE sz = { };
@@ -378,7 +285,29 @@ struct SFileBuffer * rFB_OpenFile ( LPCWSTR sFileName ) {
                     free ( sBufOld );
                 }
             }
-            pLine -> sBuf [ pLine -> nSize ] = pFileBuf [ i ];
+            if ( ( pFileBuf [ i ] & 0x80 ) ) {
+                if ( ( pFileBuf [ i ] & 0xE0 ) == 0xC0 ) {
+                    pLine -> sBuf [ pLine -> nSize ] =
+                    ( ( pFileBuf [ i + 0 ] & 0x1F ) << 6 ) +
+                    ( pFileBuf [ i + 1 ] & 0x3F );
+                    i += 1;
+                } else if ( ( pFileBuf [ i ] & 0xF0 ) == 0xE0 ) {
+                    pLine -> sBuf [ pLine -> nSize ] =
+                    ( ( pFileBuf [ i + 0 ] & 0x0F ) << 12 ) +
+                    ( ( pFileBuf [ i + 1 ] & 0x3F ) << 6 ) +
+                    ( pFileBuf [ i + 2 ] & 0x3F );
+                    i += 2;
+                } else if ( ( pFileBuf [ i ] & 0xF8 ) == 0xF0 ) {
+                    pLine -> sBuf [ pLine -> nSize ] =
+                    ( ( pFileBuf [ i + 0 ] & 0x07 ) << 18 ) +
+                    ( ( pFileBuf [ i + 1 ] & 0x3F ) << 12 ) +
+                    ( ( pFileBuf [ i + 2 ] & 0x3F ) << 6 ) +
+                    ( pFileBuf [ i + 3 ] & 0x3F );
+                    i += 3;
+                }
+            } else {
+                pLine -> sBuf [ pLine -> nSize ] = pFileBuf [ i ];
+            }
             ++ pLine -> nSize;
         }
     }

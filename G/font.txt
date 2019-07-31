@@ -1,14 +1,36 @@
-L_lfHeight         -27
+L_lfHeight         24
 L_lfWidth          0
 L_lfEscapement     0
 L_lfOrientation    0
-L_lfWeight         400
+L_lfWeight         700
 B_lfItalic         0
 B_lfUnderline      0
 B_lfStrikeOut      0
-B_lfCharSet        204
-B_lfOutPrecision   3
-B_lfClipPrecision  2
-B_lfQuality        1
-B_lfPitchAndFamily 2
-W_lfFaceName[32]   Roboto Slab
+B_lfCharSet        0
+B_lfOutPrecision   0
+B_lfClipPrecision  0
+B_lfQuality        0
+B_lfPitchAndFamily 0
+W_lfFaceName[32]   Fira Code
+
+
+tmHeight            24
+tmAscent            19
+tmDescent           5
+tmInternalLeading   4
+tmExternalLeading   0
+tmAveCharWidth      12
+tmMaxCharWidth      60
+tmWeight            700
+tmOverhang          0
+tmDigitizedAspectX  96
+tmDigitizedAspectY  96
+tmFirstChar         13
+tmLastChar          65279
+tmDefaultChar       12
+tmBreakChar         13
+tmItalic            0
+tmUnderlined        0
+tmStruckOut         0
+tmPitchAndFamily    54
+tmCharSet           0
