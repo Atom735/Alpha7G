@@ -2,7 +2,7 @@ L_lfHeight         24
 L_lfWidth          0
 L_lfEscapement     0
 L_lfOrientation    0
-L_lfWeight         700
+L_lfWeight         400
 B_lfItalic         0
 B_lfUnderline      0
 B_lfStrikeOut      0
@@ -20,8 +20,8 @@ tmDescent           5
 tmInternalLeading   4
 tmExternalLeading   0
 tmAveCharWidth      12
-tmMaxCharWidth      60
-tmWeight            700
+tmMaxCharWidth      59
+tmWeight            400
 tmOverhang          0
 tmDigitizedAspectX  96
 tmDigitizedAspectY  96
