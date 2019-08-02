@@ -21,6 +21,7 @@ PATH_LIBS = \
 GCC_DEFINES =\
 	WIN32_LEAN_AND_MEAN\
 	_WIN32_WINNT=_WIN32_WINNT_WIN7\
+	UNICODE\
 
 GCC_LIBS =\
 	$(addprefix $(SDK_PATH_SSL)x86\\, libcrypto-41.lib libssl-43.lib )\
@@ -46,6 +47,7 @@ LDFLAGS =\
 	-lmingw32\
 	-lws2_32\
 	$(GCC_LIBS)\
+
 
 FILES =\
 	main.c\
